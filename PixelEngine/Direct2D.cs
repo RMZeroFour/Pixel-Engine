@@ -43,7 +43,7 @@ namespace PixelEngine
 			int top = rc.Top + y * pixHeight;
 			int bottom = top + pixHeight;
 			RectF pix = new RectF(left, top, right, bottom);
-
+			
 			Brush b;
 			if (brushes.ContainsKey(col))
 			{

@@ -23,10 +23,10 @@ namespace PixelEngine
 		public int PixHeight { get; private set; }
 
 		// Title of the app
-		public string AppName
+		protected virtual string AppName
 		{
 			get => text;
-			protected set
+			set
 			{
 				text = value;
 				if(init)

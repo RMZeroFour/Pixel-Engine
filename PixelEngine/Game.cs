@@ -18,6 +18,17 @@ namespace PixelEngine
 		protected int MouseX { get; private set; }
 		protected int MouseY { get; private set; }
 
+		protected override string AppName
+		{
+			get => base.AppName;
+			set
+			{
+				base.AppName = value;
+				if (Handle != IntPtr.Zero)
+					SetWindowText(Handle, AppName);
+			}
+		}
+
 		private float pixBlend;
 
 		private Pixel[] prev;
@@ -34,7 +45,8 @@ namespace PixelEngine
 		private Sprite drawTarget;
 		private Sprite defDrawTarget;
 		private Sprite fontSprite = null;
-
+		private bool delaying;
+		private float delayTime;
 		private readonly Button[] keyboard = new Button[256];
 		private readonly bool[] newKeyboard = new bool[256];
 		private readonly bool[] oldKeyboard = new bool[256];
@@ -57,7 +69,7 @@ namespace PixelEngine
 
 			MessagePump();
 		}
-		public new void Construct(int width = 256, int height = 256, int pixWidth = 4, int pixHeight = 4)
+		public new void Construct(int width = 250, int height = 250, int pixWidth = 5, int pixHeight = 5)
 		{
 			base.Construct(width, height, pixWidth, pixHeight);
 
@@ -84,6 +96,21 @@ namespace PixelEngine
 					t2 = DateTime.Now;
 					TimeSpan elapsed = t2 - t1;
 					t1 = t2;
+
+					if (delaying)
+					{
+						delayTime -= (float)elapsed.TotalMilliseconds;
+
+						if (delayTime <= 0)
+						{
+							delayTime = 0;
+							delaying = false;
+						}
+						else
+						{
+							continue;
+						}
+					}
 
 					if (paused)
 						continue;
@@ -234,30 +261,37 @@ namespace PixelEngine
 		#endregion
 
 		#region Helpers
-		public void Continue() => active = true;
-		public void Finish() => active = false;
-		public void NoLoop() => paused = true;
-		public void Loop() => paused = false;
+		protected void Delay(TimeSpan time)
+		{
+			if (!delaying)
+				delaying = true;
+			delayTime += (float)time.TotalMilliseconds;
+		}
 
-		public Button GetKey(Key k) => keyboard[(int)k];
-		public Button GetMouse(Mouse m) => mouse[(int)m];
+		protected void Continue() => active = true;
+		protected void Finish() => active = false;
+		protected void NoLoop() => paused = true;
+		protected void Loop() => paused = false;
 
-		public Sprite GetDrawTarget() => drawTarget;
-		public void SetDrawTarget(Sprite target)
+		protected Button GetKey(Key k) => keyboard[(int)k];
+		protected Button GetMouse(Mouse m) => mouse[(int)m];
+
+		protected Sprite GetDrawTarget() => drawTarget;
+		protected void SetDrawTarget(Sprite target)
 		{
 			if (target != null)
 				drawTarget = target;
 			else
 				drawTarget = defDrawTarget;
 		}
-		public int GetDrawTargetWidth()
+		protected int GetDrawTargetWidth()
 		{
 			if (drawTarget != null)
 				return drawTarget.Width;
 			else
 				return 0;
 		}
-		public int GetDrawTargetHeight()
+		protected int GetDrawTargetHeight()
 		{
 			if (drawTarget != null)
 				return drawTarget.Height;
@@ -313,8 +347,6 @@ namespace PixelEngine
 					}
 				}
 			}
-
-			Sprite.Save(fontSprite, Environment.GetFolderPath(0) + "\\Font.png");
 		}
 		protected internal override void CreateWindow()
 		{
@@ -330,8 +362,11 @@ namespace PixelEngine
 			int width = winRect.Right - winRect.Left;
 			int height = winRect.Bottom - winRect.Top;
 
+			if (string.IsNullOrWhiteSpace(AppName))
+				AppName = GetType().Name;
+
 			int def = 250;
-			Handle = CreateWindowEx(0, GetType().FullName, AppName ?? GetType().Name, (uint)(WindowStyles.OverlappedWindow | WindowStyles.Visible),
+			Handle = CreateWindowEx(0, GetType().FullName, AppName, (uint)(WindowStyles.OverlappedWindow | WindowStyles.Visible),
 				def, def, width, height, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
 
 			GetClientRect(Handle, out Rect r);

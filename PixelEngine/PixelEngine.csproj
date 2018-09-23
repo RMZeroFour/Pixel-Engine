@@ -72,6 +72,11 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Libraries\Microsoft.WindowsAPICodePack.DirectX.dll" />
+    <Content Include="Libraries\PixelEngine.dll" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\WindowsAPICodePack-DirectX.1.1.2\build\WindowsAPICodePack-DirectX.targets" Condition="Exists('..\packages\WindowsAPICodePack-DirectX.1.1.2\build\WindowsAPICodePack-DirectX.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
