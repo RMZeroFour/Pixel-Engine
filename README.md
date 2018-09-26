@@ -1,7 +1,7 @@
 # Pixel-Engine
 A simple game engine for C# using DirectX. Inspired by the olcPixelGameEngine.
 
-Check out the olcPixelGameEngine for C++ at https://github.com/OneLoneCoder/olcPixelGameEngine, and its creator, Javidx9 at https://www.youtube.com/channel/UC-yuWVUplUJZvieEligKBkA.
+Check out the olcPixelGameEngine for C++ at https://github.com/OneLoneCoder/olcPixelGameEngine, and its creator, Javidx9 at https://www.youtube.com/channel/UC-yuWVUplUJZvieEligKBkA and his website https://onelonecoder.com/.
 
 This game engine was ported from C++ to C# in the hopes that it will help people develop their ideas faster and not waste their time in creating the same graphics code and game loop again and again.
 
