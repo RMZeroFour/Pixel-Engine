@@ -46,18 +46,8 @@ namespace Examples
 
 		private void Reset()
 		{
-			snake = new List<SnakeSegment>()
-			{
-				new SnakeSegment(20, 15),
-				new SnakeSegment(21, 15),
-				new SnakeSegment(22, 15),
-				new SnakeSegment(23, 15),
-				new SnakeSegment(24, 15),
-				new SnakeSegment(25, 15),
-				new SnakeSegment(26, 15),
-				new SnakeSegment(27, 15),
-				new SnakeSegment(28, 15)
-			};
+			for(int i = 0; i < 9; i++)
+				snake.Add(new SnakeSegment(i + 20, 15));
 
 			foodX = 30;
 			foodY = 15;
