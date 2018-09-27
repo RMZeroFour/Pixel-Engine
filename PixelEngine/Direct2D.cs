@@ -17,8 +17,6 @@ namespace PixelEngine
 		private D2DFactory factory;
 		private HwndRenderTarget target;
 
-		private static readonly Dictionary<Pixel, Brush> brushes = new Dictionary<Pixel, Brush>();
-
 		internal void Init(Display display)
 		{
 			rc = new Rect(display.ClientRect.Left, display.ClientRect.Top, display.ClientRect.Right, display.ClientRect.Bottom);
@@ -44,17 +42,10 @@ namespace PixelEngine
 			int bottom = top + pixHeight;
 			RectF pix = new RectF(left, top, right, bottom);
 			
-			Brush b;
-			if (brushes.ContainsKey(col))
-			{
-				b = brushes[col];
-			}
-			else
-			{
-				b = target.CreateSolidColorBrush(Convert(col));
-				brushes.Add(col, b);
-			}
+			Brush b = target.CreateSolidColorBrush(Convert(col));
 			target.FillRectangle(pix, b);
+			
+			b.Dispose();
 		}
 		public void End() => target.TryEndDraw(out Tags _, out DX.ErrorCode _);
 
@@ -71,9 +62,6 @@ namespace PixelEngine
 			{
 				if (disposing)
 				{
-					foreach (KeyValuePair<Pixel, Brush> pair in brushes)
-						pair.Value.Dispose();
-
 					target.Dispose();
 					factory.Dispose();
 				}
