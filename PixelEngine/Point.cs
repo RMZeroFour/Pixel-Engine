@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,6 +18,6 @@ namespace PixelEngine
 		public int X { get; private set; }
 		public int Y { get; private set; }
 
-		public static Point Origin => new Point();
+		public static Point Origin = new Point();
 	}
 }
