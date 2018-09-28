@@ -10,7 +10,9 @@ namespace PixelEngine
 		public const int VRedraw = 0x1;
 		public const int HRedraw = 0x2;
 		public const int OwnDC = 0x20;
-		
+
+		public const int WheelDelta = 120;
+
 		public const int ApplicationIcon = 32512;
 		public const int ArrowCursor = 32512;
 		public const int ColorWindow = 5;

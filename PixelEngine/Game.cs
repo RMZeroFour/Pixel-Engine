@@ -17,6 +17,7 @@ namespace PixelEngine
 		protected bool Focus { get; private set; }
 		protected int MouseX { get; private set; }
 		protected int MouseY { get; private set; }
+		protected float MouseScroll { get; private set; }
 
 		protected override string AppName
 		{
@@ -69,7 +70,7 @@ namespace PixelEngine
 
 			MessagePump();
 		}
-		public new void Construct(int width = 250, int height = 250, int pixWidth = 5, int pixHeight = 5)
+		public new void Construct(int width = 500, int height = 500, int pixWidth = 5, int pixHeight = 5)
 		{
 			base.Construct(width, height, pixWidth, pixHeight);
 
@@ -196,7 +197,7 @@ namespace PixelEngine
 				oldKeyboard[i] = newKeyboard[i];
 			}
 		}
-		protected override IntPtr WndProc(IntPtr handle, uint msg, int wParam, int lParam)
+		private protected override IntPtr WndProc(IntPtr handle, uint msg, int wParam, int lParam)
 		{
 			switch (msg)
 			{
@@ -222,6 +223,10 @@ namespace PixelEngine
 					Key ku = mapKeys[(uint)wParam];
 					newKeyboard[(int)ku] = false;
 					OnKeyRelease(ku);
+					break;
+				case (uint)WM.MOUSEHWHEEL:
+					MouseScroll = MouseWheelDelta(wParam) / (float)WheelDelta;
+					OnMouseScroll();
 					break;
 				case (uint)WM.LBUTTONDOWN:
 					newMouse[(int)Mouse.Left] = true;
@@ -348,7 +353,7 @@ namespace PixelEngine
 				}
 			}
 		}
-		protected internal override void CreateWindow()
+		private protected override void CreateWindow()
 		{
 			// Define window furniture
 			uint styleEx = (uint)(WindowStylesEx.AppWindow | WindowStylesEx.WindowEdge);
@@ -374,7 +379,7 @@ namespace PixelEngine
 
 			MapKeyboard();
 		}
-		protected internal override void RegisterClass()
+		private protected override void RegisterClass()
 		{
 			WindowClassEx wc = new WindowClassEx
 			{
@@ -428,6 +433,7 @@ namespace PixelEngine
 		}
 		private uint LoWord(uint val) => val & 0xFFFF;
 		private uint HiWord(uint val) => val >> 16;
+		private short MouseWheelDelta(int wParam) => ((short)(wParam >> 16));
 		#endregion
 
 		#region Drawing
@@ -840,6 +846,7 @@ namespace PixelEngine
 		public virtual void OnUpdate(TimeSpan elapsed) { }
 		public virtual void OnMousePress(Mouse b) { }
 		public virtual void OnMouseRelease(Mouse b) { }
+		public virtual void OnMouseScroll() { }
 		public virtual void OnKeyPress(Key k) { }
 		public virtual void OnKeyRelease(Key k) { }
 		public virtual void OnDestroy() { }

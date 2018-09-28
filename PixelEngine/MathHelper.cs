@@ -2,7 +2,7 @@
 
 namespace PixelEngine
 {
-	internal static class Randoms
+	internal static class MathHelper
 	{
 		private readonly static Random rnd = new Random();
 
@@ -14,5 +14,7 @@ namespace PixelEngine
 			rnd.NextBytes(b);
 			return b;
 		}
+
+		public static float Map(float val, float min, float max, float newMin, float newMax) => ((val - min) / (max - min) * (newMax - newMin)) + newMin;
 	}
 }

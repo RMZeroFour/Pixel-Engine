@@ -41,7 +41,7 @@ namespace PixelEngine
 		internal Rect ClientRect { get; set; }
 
 		// Handle of the window
-		public IntPtr Handle { get; protected set; }
+		protected internal IntPtr Handle { get; protected set; }
 
 		// Assign the window details
 		public void Construct(int width = 256, int height = 256, int pixWidth = 4, int pixHeight = 4)
@@ -53,7 +53,7 @@ namespace PixelEngine
 		}
 
 		// Start the windows message pump
-		protected void MessagePump()
+		private protected void MessagePump()
 		{
 			while (GetMessage(out Message msg, IntPtr.Zero, 0, 0) > 0)
 			{
@@ -63,7 +63,7 @@ namespace PixelEngine
 		}
 
 		// Create the window using the winapi
-		protected internal virtual void CreateWindow()
+		private protected virtual void CreateWindow()
 		{
 			int def = 250;
 
@@ -77,7 +77,7 @@ namespace PixelEngine
 		}
 
 		// Register the class with the winapi
-		protected internal virtual void RegisterClass()
+		private protected virtual void RegisterClass()
 		{
 			WindowClassEx wcex = new WindowClassEx()
 			{
@@ -98,7 +98,7 @@ namespace PixelEngine
 		}
 
 		// Handle messages for processing
-		protected virtual IntPtr WndProc(IntPtr handle, uint msg, int wParam, int lParam)
+		private protected virtual IntPtr WndProc(IntPtr handle, uint msg, int wParam, int lParam)
 		{
 			switch (msg)
 			{
