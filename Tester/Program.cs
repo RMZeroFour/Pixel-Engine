@@ -15,18 +15,19 @@ namespace Test
 			p.Start();
 		}
 
+		private int size;
+		private Pixel col = Pixel.White;
+
 		public Program() => AppName = "Pixels";
 
 		public override void OnUpdate(TimeSpan elapsed)
 		{
-			for (int i = 0; i < ScreenWidth / PixWidth; i++)
-				for (int j = 0; j < ScreenHeight / PixHeight; j++)
-					Draw(i, j, Pixel.Random());
-
-			FillRect(new Point(MouseX - 1, MouseY - 1), 3, 3, Pixel.White);
+			Clear(Pixel.Black);
+			FillCircle(new Point(MouseX, MouseY), size * 2 + 1, col);
 		}
 
-		public override void OnMouseScroll() => Console.WriteLine("Scrolling to {0}!", MouseScroll);
-		public override void OnMousePress(Mouse b) => Console.WriteLine("Click!");
+		public override void OnMouseScroll() => size = Math.Abs(MouseScroll);
+		public override void OnMouseDown(Mouse m) => col = Pixel.Random();
+		public override void OnMouseRelease(Mouse m) => col = Pixel.White;
 	}
 }

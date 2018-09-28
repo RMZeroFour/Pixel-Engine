@@ -17,7 +17,7 @@ namespace PixelEngine
 		protected bool Focus { get; private set; }
 		protected int MouseX { get; private set; }
 		protected int MouseY { get; private set; }
-		protected float MouseScroll { get; private set; }
+		protected int MouseScroll { get; private set; }
 
 		protected override string AppName
 		{
@@ -30,7 +30,7 @@ namespace PixelEngine
 			}
 		}
 
-		private float pixBlend;
+		private float pixBlend = 1;
 
 		private Pixel[] prev;
 
@@ -170,6 +170,9 @@ namespace PixelEngine
 					}
 				}
 
+				if(mouse[i].Down)
+					OnMouseDown((Mouse)i);
+
 				oldMouse[i] = newMouse[i];
 			}
 		}
@@ -193,6 +196,9 @@ namespace PixelEngine
 						keyboard[i].Down = false;
 					}
 				}
+
+				if (keyboard[i].Down)
+					OnKeyDown((Key)i);
 
 				oldKeyboard[i] = newKeyboard[i];
 			}
@@ -224,8 +230,9 @@ namespace PixelEngine
 					newKeyboard[(int)ku] = false;
 					OnKeyRelease(ku);
 					break;
-				case (uint)WM.MOUSEHWHEEL:
-					MouseScroll = MouseWheelDelta(wParam) / (float)WheelDelta;
+				case (uint)WM.MOUSEWHEEL:
+					short wheel = MouseWheelDelta(wParam);
+					MouseScroll += wheel / WheelDelta;
 					OnMouseScroll();
 					break;
 				case (uint)WM.LBUTTONDOWN:
@@ -277,6 +284,8 @@ namespace PixelEngine
 		protected void Finish() => active = false;
 		protected void NoLoop() => paused = true;
 		protected void Loop() => paused = false;
+
+		protected void ScrollReset() => MouseScroll = 0;
 
 		protected Button GetKey(Key k) => keyboard[(int)k];
 		protected Button GetMouse(Mouse m) => mouse[(int)m];
@@ -422,7 +431,6 @@ namespace PixelEngine
 			mapKeys[0x30] = Key.K0; mapKeys[0x31] = Key.K1; mapKeys[0x32] = Key.K2; mapKeys[0x33] = Key.K3; mapKeys[0x34] = Key.K4;
 			mapKeys[0x35] = Key.K5; mapKeys[0x36] = Key.K6; mapKeys[0x37] = Key.K7; mapKeys[0x38] = Key.K8; mapKeys[0x39] = Key.K9;
 		}
-
 		private int Clip(int val, int min, int max)
 		{
 			if (val < min)
@@ -844,11 +852,13 @@ namespace PixelEngine
 		#region Functionality
 		public virtual void OnCreate() { }
 		public virtual void OnUpdate(TimeSpan elapsed) { }
-		public virtual void OnMousePress(Mouse b) { }
-		public virtual void OnMouseRelease(Mouse b) { }
+		public virtual void OnMousePress(Mouse m) { }
+		public virtual void OnMouseRelease(Mouse m) { }
+		public virtual void OnMouseDown(Mouse m) { }
 		public virtual void OnMouseScroll() { }
 		public virtual void OnKeyPress(Key k) { }
 		public virtual void OnKeyRelease(Key k) { }
+		public virtual void OnKeyDown(Key k) { }
 		public virtual void OnDestroy() { }
 		#endregion
 	}
