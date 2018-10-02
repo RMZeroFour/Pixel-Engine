@@ -24,7 +24,7 @@ namespace Examples
 		static void Main(string[] args)
 		{
 			Snake s = new Snake();
-			s.Construct(500, 500, 10, 10);
+			s.Construct(500, 500, 10, 10, 30);
 			s.Start();
 		}
 
@@ -46,7 +46,8 @@ namespace Examples
 
 		private void Reset()
 		{
-			for(int i = 0; i < 9; i++)
+			snake = new List<SnakeSegment>();
+			for (int i = 0; i < 9; i++)
 				snake.Add(new SnakeSegment(i + 20, 15));
 
 			foodX = 30;
@@ -72,9 +73,6 @@ namespace Examples
 
 			if (dead)
 				started = false;
-
-      // Delay the frame to slow down gameplay slightly
-			Delay(TimeSpan.FromMilliseconds(40));
 
 			if (GetKey(Key.Right).Pressed)
 			{
