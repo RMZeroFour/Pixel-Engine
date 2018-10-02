@@ -44,7 +44,7 @@ namespace PixelEngine
 		protected internal IntPtr Handle { get; protected set; }
 
 		// Assign the window details
-		public void Construct(int width = 256, int height = 256, int pixWidth = 4, int pixHeight = 4)
+		internal void Construct(int width = 500, int height = 500, int pixWidth = 5, int pixHeight = 5)
 		{
 			this.ScreenWidth = width;
 			this.ScreenHeight = height;

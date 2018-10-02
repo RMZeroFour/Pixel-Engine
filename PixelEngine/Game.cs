@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+
 using static PixelEngine.Windows;
 
 namespace PixelEngine
@@ -13,8 +13,10 @@ namespace PixelEngine
 		#region Members
 		protected Pixel.Mode PixelMode { get; set; } = Pixel.Mode.Normal;
 		protected float PixelBlend { get => pixBlend; set => pixBlend = value < 0 ? 0 : value > 1 ? 1 : value; }
+		protected DateTime StartTime { get; set; }
 		protected long FrameCount { get; private set; }
 		protected bool Focus { get; private set; }
+		protected int FrameRate { get; private set; }
 		protected int MouseX { get; private set; }
 		protected int MouseY { get; private set; }
 		protected int MouseScroll { get; private set; }
@@ -31,6 +33,8 @@ namespace PixelEngine
 		}
 
 		private float pixBlend = 1;
+
+		private Timer frameTimer;
 
 		private Pixel[] prev;
 
@@ -70,9 +74,11 @@ namespace PixelEngine
 
 			MessagePump();
 		}
-		public new void Construct(int width = 500, int height = 500, int pixWidth = 5, int pixHeight = 5)
+		public void Construct(int width = 500, int height = 500, int pixWidth = 5, int pixHeight = 5, int frameRate = 60)
 		{
 			base.Construct(width, height, pixWidth, pixHeight);
+			FrameRate = frameRate;
+			frameTimer = new Timer(1000.0f / FrameRate);
 
 			ConstructFontSheet();
 
@@ -85,10 +91,13 @@ namespace PixelEngine
 			canvas = new Direct2D();
 			canvas.Init(this);
 
+			StartTime = DateTime.Now;
+
 			OnCreate();
 
 			DateTime t1 = DateTime.Now;
 			DateTime t2 = DateTime.Now;
+			frameTimer.Init(t1);
 
 			while (active)
 			{
@@ -98,9 +107,14 @@ namespace PixelEngine
 					TimeSpan elapsed = t2 - t1;
 					t1 = t2;
 
+					if (!frameTimer.Tick())
+						continue;
+
+					OnUpdate(elapsed);
+
 					if (delaying)
 					{
-						delayTime -= (float)elapsed.TotalMilliseconds;
+						delayTime -= elapsed.Milliseconds;
 
 						if (delayTime <= 0)
 						{
@@ -121,7 +135,6 @@ namespace PixelEngine
 
 					FrameCount++;
 
-					OnUpdate(elapsed);
 					RenderImage();
 				}
 
@@ -371,7 +384,6 @@ namespace PixelEngine
 
 			// Keep client size as requested
 			AdjustWindowRectEx(ref winRect, style, false, styleEx);
-			Console.WriteLine(winRect.Right + " " + winRect.Bottom);
 
 			int width = winRect.Right - winRect.Left;
 			int height = winRect.Bottom - winRect.Top;
