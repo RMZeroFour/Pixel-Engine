@@ -58,6 +58,8 @@
     <Compile Include="Display.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Game.cs" />
+    <Compile Include="Noise.cs" />
+    <Compile Include="Pattern.cs" />
     <Compile Include="Pixel.cs" />
     <Compile Include="Point.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
