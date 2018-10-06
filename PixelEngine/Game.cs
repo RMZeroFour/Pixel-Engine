@@ -110,8 +110,6 @@ namespace PixelEngine
 					if (!frameTimer.Tick())
 						continue;
 
-					OnUpdate(elapsed);
-
 					if (delaying)
 					{
 						delayTime -= elapsed.Milliseconds;
@@ -129,6 +127,8 @@ namespace PixelEngine
 
 					if (paused)
 						continue;
+
+					OnUpdate(elapsed);
 
 					HandleKeyboard();
 					HandleMouse();
