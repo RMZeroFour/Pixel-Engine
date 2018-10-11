@@ -141,7 +141,7 @@ namespace Examples
 
 		private void RandomizeFood()
 		{
-			while (GetDrawTarget()[foodX, foodY] != Pixel.Black)
+			while (DrawTarget[foodX, foodY] != Pixel.Black)
 			{
 				foodX = rnd.Next(ScreenWidth);
 				foodY = rnd.Next(ScreenHeight);
