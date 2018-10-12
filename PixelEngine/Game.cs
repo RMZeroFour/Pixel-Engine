@@ -20,17 +20,27 @@ namespace PixelEngine
 		protected int MouseX { get; private set; }
 		protected int MouseY { get; private set; }
 		protected int MouseScroll { get; private set; }
+		protected Sprite DrawTarget
+		{
+			get => drawTarget;
+			set => drawTarget = value ?? defDrawTarget;
+		}
 
-		protected override string AppName
+		protected int Rows => ScreenWidth / PixWidth;
+		protected int Cols => ScreenHeight / PixHeight;
+
+		public override string AppName
 		{
 			get => base.AppName;
-			set
+			protected set
 			{
 				base.AppName = value;
 				if (Handle != IntPtr.Zero)
 					SetWindowText(Handle, AppName);
 			}
 		}
+
+		private Thread gameLoop;
 
 		private float pixBlend = 1;
 
@@ -69,8 +79,8 @@ namespace PixelEngine
 
 			active = true;
 
-			Thread t = new Thread(GameLoop);
-			t.Start();
+			gameLoop = new Thread(GameLoop);
+			gameLoop.Start();
 
 			MessagePump();
 		}
@@ -81,10 +91,35 @@ namespace PixelEngine
 			frameTimer = new Timer(1000.0f / FrameRate);
 
 			ConstructFontSheet();
+			HandleDrawTarget();
+		}
+		public void Fullscreen()
+		{
+			MonitorInfo mi = new MonitorInfo();
+			mi.Size = Marshal.SizeOf(mi);
 
-			defDrawTarget = new Sprite(ScreenWidth / PixWidth, ScreenHeight / PixHeight);
-			prev = new Pixel[defDrawTarget.Width * defDrawTarget.Height];
-			SetDrawTarget(null);
+			if (GetMonitorInfo(MonitorFromWindow(Handle, MonitorDefaultNearest), ref mi))
+			{
+				int style = GetWindowLong(Handle, (int)WindowLongs.STYLE);
+
+				SetWindowLong(Handle, (int)WindowLongs.STYLE, style & ~(int)WindowStyles.OverlappedWindow);
+
+				SetWindowPos(Handle, WindowTop,
+							 mi.Monitor.Left, mi.Monitor.Top,
+							 mi.Monitor.Right - mi.Monitor.Left,
+							 mi.Monitor.Bottom - mi.Monitor.Top,
+							 (uint)(SWP.NoOwnerZOrder | SWP.FrameChanged));
+			}
+
+			GetClientRect(Handle, out Rect r);
+			ClientRect = r;
+
+			ScreenWidth = r.Right - r.Left;
+			ScreenHeight = r.Bottom - r.Top;
+
+			HandleDrawTarget();
+
+			canvas.Init(this);
 		}
 		private void GameLoop()
 		{
@@ -216,6 +251,12 @@ namespace PixelEngine
 				oldKeyboard[i] = newKeyboard[i];
 			}
 		}
+		private void HandleDrawTarget()
+		{
+			defDrawTarget = new Sprite(ScreenWidth / PixWidth, ScreenHeight / PixHeight);
+			prev = new Pixel[defDrawTarget.Width * defDrawTarget.Height];
+			DrawTarget = defDrawTarget;
+		}
 		private protected override IntPtr WndProc(IntPtr handle, uint msg, int wParam, int lParam)
 		{
 			switch (msg)
@@ -297,34 +338,26 @@ namespace PixelEngine
 		protected void Finish() => active = false;
 		protected void NoLoop() => paused = true;
 		protected void Loop() => paused = false;
-
+		
 		protected void ScrollReset() => MouseScroll = 0;
 
 		protected Button GetKey(Key k) => keyboard[(int)k];
 		protected Button GetMouse(Mouse m) => mouse[(int)m];
 
-		protected Sprite GetDrawTarget() => drawTarget;
-		protected void SetDrawTarget(Sprite target)
-		{
-			if (target != null)
-				drawTarget = target;
-			else
-				drawTarget = defDrawTarget;
-		}
-		protected int GetDrawTargetWidth()
-		{
-			if (drawTarget != null)
-				return drawTarget.Width;
-			else
-				return 0;
-		}
-		protected int GetDrawTargetHeight()
-		{
-			if (drawTarget != null)
-				return drawTarget.Height;
-			else
-				return 0;
-		}
+		protected float Sin(float val) => (float)Math.Sin(val);
+		protected float Cos(float val) => (float)Math.Cos(val);
+		protected float Tan(float val) => (float)Math.Tan(val);
+
+		protected float Power(float val, float pow) => (float)Math.Pow(val, pow);
+		protected float Round(float val, int digits = 0) => (float)Math.Round(val, digits);
+
+		protected float Map(float val, float oMin, float oMax, float nMin, float nMax) => (val - oMin) / (oMax - oMin) * (nMax - nMin) + nMin;
+		protected float Constrain(float val, float min, float max) => Math.Max(Math.Min(max, val), min);
+		protected float Lerp(float start, float end, float amt) => Map(Constrain(amt, 0, 1), 0, 1, start, end);
+		protected float Distance(float x1, float y1, float x2, float y2) => Power(Power(x2 - x1, 2) + Power(y2 - y1, 2), 1 / 2);
+
+		protected float Degrees(float radians) => (float)(radians * 180 / Math.PI);
+		protected float Radians(float degrees) => (float)(degrees * Math.PI / 180);
 		#endregion
 
 		#region Inner
@@ -388,13 +421,9 @@ namespace PixelEngine
 			int width = winRect.Right - winRect.Left;
 			int height = winRect.Bottom - winRect.Top;
 
-			if (string.IsNullOrWhiteSpace(AppName))
-				AppName = GetType().Name;
-
-			int def = 250;
-			Handle = CreateWindowEx(0, GetType().FullName, AppName, (uint)(WindowStyles.OverlappedWindow | WindowStyles.Visible),
-				def, def, width, height, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
-
+			Handle = CreateWindowEx(0, ClassName, AppName, (uint)(WindowStyles.OverlappedWindow | WindowStyles.Visible),
+					0, 0, ScreenWidth, ScreenHeight, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+				 
 			GetClientRect(Handle, out Rect r);
 			ClientRect = r;
 
@@ -457,8 +486,8 @@ namespace PixelEngine
 		#endregion
 
 		#region Drawing
-		protected void Draw(int x, int y, Pixel col) => Draw(new Point(x, y), col);
-		protected void Draw(Point p, Pixel col)
+		public void Draw(int x, int y, Pixel col) => Draw(new Point(x, y), col);
+		public void Draw(Point p, Pixel col)
 		{
 			if (drawTarget == null)
 				return;
@@ -486,7 +515,7 @@ namespace PixelEngine
 					break;
 			}
 		}
-		protected void DrawLine(Point p1, Point p2, Pixel col)
+		public void DrawLine(Point p1, Point p2, Pixel col)
 		{
 			int x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;
 			dx = p2.X - p1.X; dy = p2.Y - p1.Y;
@@ -545,7 +574,7 @@ namespace PixelEngine
 				}
 			}
 		}
-		protected void DrawCircle(Point p, int radius, Pixel col)
+		public void DrawCircle(Point p, int radius, Pixel col)
 		{
 			int x0 = 0;
 			int y0 = radius;
@@ -571,7 +600,7 @@ namespace PixelEngine
 					d += 4 * (x0++ - y0--) + 10;
 			}
 		}
-		protected void FillCircle(Point p, int radius, Pixel col)
+		public void FillCircle(Point p, int radius, Pixel col)
 		{
 			int x0 = 0;
 			int y0 = radius;
@@ -599,14 +628,14 @@ namespace PixelEngine
 					d += 4 * (x0++ - y0--) + 10;
 			}
 		}
-		protected void DrawRect(Point p, int w, int h, Pixel col)
+		public void DrawRect(Point p, int w, int h, Pixel col)
 		{
 			DrawLine(new Point(p.X, p.Y), new Point(p.X + w, p.Y), col);
 			DrawLine(new Point(p.X + w, p.Y), new Point(p.X + w, p.Y + h), col);
 			DrawLine(new Point(p.X + w, p.Y + h), new Point(p.X, p.Y + h), col);
 			DrawLine(new Point(p.X, p.Y + h), new Point(p.X, p.Y), col);
 		}
-		protected void FillRect(Point p, int w, int h, Pixel col)
+		public void FillRect(Point p, int w, int h, Pixel col)
 		{
 			int x2 = p.X + w;
 			int y2 = p.Y + h;
@@ -621,13 +650,13 @@ namespace PixelEngine
 				for (int j = p.Y; j < y2; j++)
 					Draw(i, j, col);
 		}
-		protected void DrawTriangle(Point p1, Point p2, Point p3, Pixel col)
+		public void DrawTriangle(Point p1, Point p2, Point p3, Pixel col)
 		{
 			DrawLine(p1, p2, col);
 			DrawLine(p2, p3, col);
 			DrawLine(p3, p1, col);
 		}
-		protected void FillTriangle(Point p1, Point p2, Point p3, Pixel col)
+		public void FillTriangle(Point p1, Point p2, Point p3, Pixel col)
 		{
 			void Swap(ref int a, ref int b) { int t = a; a = b; b = t; }
 			void MakeLine(int sx, int ex, int ny) { for (int i = sx; i <= ex; i++) Draw(i, ny, col); }
@@ -780,18 +809,23 @@ namespace PixelEngine
 				if (y > y3) return;
 			}
 		}
-		protected void DrawPolygon(Point[] verts, Pixel col)
+		public void DrawPolygon(Point[] verts, Pixel col)
 		{
 			for (int i = 0; i < verts.Length - 1; i++)
 				DrawLine(verts[i], verts[i + 1], col);
 			DrawLine(verts[verts.Length - 1], verts[0], col);
 		}
-		protected void FillPolygon(Point[] verts, Pixel col)
+		public void FillPolygon(Point[] verts, Pixel col)
 		{
 			for (int i = 1; i < verts.Length - 1; i++)
 				FillTriangle(verts[0], verts[i], verts[i + 1], col);
 		}
-		protected void DrawSprite(Point p, Sprite spr)
+		public void DrawPath(Point[] points, Pixel col)
+		{
+			for (int i = 0; i < points.Length - 1; i++)
+				DrawLine(points[i], points[i + 1], col);
+		}
+		public void DrawSprite(Point p, Sprite spr)
 		{
 			if (spr == null)
 				return;
@@ -800,7 +834,7 @@ namespace PixelEngine
 				for (int j = 0; j < spr.Height; j++)
 					Draw(p.X + i, p.Y + j, spr[i, j]);
 		}
-		protected void DrawPartialSprite(Point p, Sprite spr, Point op, int w, int h)
+		public void DrawPartialSprite(Point p, Sprite spr, Point op, int w, int h)
 		{
 			if (spr == null)
 				return;
@@ -809,7 +843,7 @@ namespace PixelEngine
 				for (int j = 0; j < h; j++)
 					Draw(p.X + i, p.Y + j, spr[i + op.X, j + op.Y]);
 		}
-		protected void DrawText(Point p, string text, Pixel col, float fontSize = 1)
+		public void DrawText(Point p, string text, Pixel col, float fontSize = 1)
 		{
 			Pixel.Mode prev = PixelMode;
 			if (col.A != 255)
@@ -853,7 +887,7 @@ namespace PixelEngine
 
 			PixelMode = prev;
 		}
-		protected void Clear(Pixel p)
+		public void Clear(Pixel p)
 		{
 			Pixel[] pixels = drawTarget.GetData();
 			for (int i = 0; i < pixels.Length; i++)

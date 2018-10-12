@@ -51,6 +51,10 @@
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Button.cs" />
@@ -67,10 +71,6 @@
     <Compile Include="Sprite.cs" />
     <Compile Include="Timer.cs" />
     <Compile Include="Windows.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Libraries\Microsoft.WindowsAPICodePack.DirectX.dll" />
-    <Content Include="Libraries\PixelEngine.dll" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.WindowsAPICodePack.DirectX, Version=1.1.0.0, Culture=neutral, processorArchitecture=x86">

@@ -9,7 +9,7 @@ namespace PixelEngine
 
 	public class Display
 	{
-		private static WindowProcess proc;
+		private WindowProcess proc;
 
 		private bool init;
 		private string text;
@@ -17,16 +17,16 @@ namespace PixelEngine
 		public Display() => proc = WndProc;
 
 		// Display details
-		public int ScreenWidth { get; private set; }
-		public int ScreenHeight { get; private set; }
+		public int ScreenWidth { get; private protected set; }
+		public int ScreenHeight { get; private protected set; }
 		public int PixWidth { get; private set; }
 		public int PixHeight { get; private set; }
 
 		// Title of the app
-		protected virtual string AppName
+		public virtual string AppName
 		{
 			get => text;
-			set
+			protected set
 			{
 				text = value;
 				if(init)
@@ -35,7 +35,7 @@ namespace PixelEngine
 		}
 
 		// Name of class used to make a window
-		private string ClassName => GetType().FullName;
+		private protected string ClassName => GetType().FullName;
 		
 		// Client area of window
 		internal Rect ClientRect { get; set; }
@@ -46,10 +46,10 @@ namespace PixelEngine
 		// Assign the window details
 		internal void Construct(int width = 500, int height = 500, int pixWidth = 5, int pixHeight = 5)
 		{
-			this.ScreenWidth = width;
-			this.ScreenHeight = height;
-			this.PixWidth = pixWidth;
-			this.PixHeight = pixHeight;
+			ScreenWidth = width;
+			ScreenHeight = height;
+			PixWidth = pixWidth;
+			PixHeight = pixHeight;
 		}
 
 		// Start the windows message pump
@@ -65,11 +65,9 @@ namespace PixelEngine
 		// Create the window using the winapi
 		private protected virtual void CreateWindow()
 		{
-			int def = 250;
-
-			this.Handle = CreateWindowEx(0, ClassName, AppName, (uint)(WindowStyles.OverlappedWindow | WindowStyles.Visible),
-				def, def, ScreenWidth, ScreenHeight, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
-
+			Handle = CreateWindowEx(0, ClassName, AppName, (uint)(WindowStyles.OverlappedWindow | WindowStyles.Visible),
+					0, 0, ScreenWidth, ScreenHeight, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+				
 			GetClientRect(Handle, out Rect r);
 			ClientRect = r;
 

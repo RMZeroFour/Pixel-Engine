@@ -24,6 +24,11 @@ namespace PixelEngine
 			pixWidth = display.PixWidth;
 			pixHeight = display.PixHeight;
 
+			if (target != null)
+				target.Dispose();
+			if (factory != null)
+				factory.Dispose();
+
 			factory = D2DFactory.CreateFactory(D2DFactoryType.Multithreaded);
 
 			RenderTargetProperties props = new RenderTargetProperties();

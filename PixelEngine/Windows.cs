@@ -13,6 +13,10 @@ namespace PixelEngine
 
 		public const int WheelDelta = 120;
 
+		public const int MonitorDefaultNearest = 2;
+
+		public static readonly IntPtr WindowTop = new IntPtr(0);
+
 		public const int ApplicationIcon = 32512;
 		public const int ArrowCursor = 32512;
 		public const int ColorWindow = 5;
@@ -49,11 +53,43 @@ namespace PixelEngine
 			VScroll = 0x200000
 		}
 
+		public enum WindowLongs
+		{
+			EXSTYLE = -20,
+			HINSTANCE = -6,
+			HWNDPARENT = -8,
+			ID = -12,
+			STYLE = -16,
+			USERDATA = -21,
+			WNDPROC = -4,
+			USER = 0x8,
+			MSGRESULT = 0x0,
+			DLGPROC = 0x4
+		}
+
 		[Flags]
 		public enum WindowStylesEx : uint
 		{
 			AppWindow = 0x40000,
 			WindowEdge = 0x00100
+		}
+
+		[Flags]
+		public enum SWP : uint
+		{
+
+			FrameChanged = 0x0020,
+			HideWindow = 0x0080,
+			NoActivate = 0x0010,
+			NoCopyBits = 0x0100,
+			NoMove = 0x0002,
+			NoOwnerZOrder = 0x0200,
+			NoRedraw = 0x0008,
+			NoReposition = 0x200,
+			NoSendChanging = 0x0400,
+			NoSize = 0x0001,
+			NoZOrder = 0x0004,
+			ShowWindow = 0x0040,
 		}
 
 		public enum WM
@@ -474,6 +510,12 @@ namespace PixelEngine
 		public static extern bool SetWindowText(IntPtr hwnd, string text);
 
 		[DllImport(User, SetLastError = true)]
+		public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+
+		[DllImport(User, SetLastError = true)]
+		public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+
+		[DllImport(User, SetLastError = true)]
 		public static extern IntPtr CreateWindowEx(uint dwExStyle, [MarshalAs(UnmanagedType.LPStr)] string lpClassName, [MarshalAs(UnmanagedType.LPStr)] string lpWindowName,
 			uint dwStyle, int x, int y, int width, int height, IntPtr hWndParent, IntPtr hMenu, IntPtr hInstance, IntPtr lpParam);
 
@@ -510,6 +552,15 @@ namespace PixelEngine
 		[DllImport(User)]
 		public static extern IntPtr LoadIcon(IntPtr hInstance, IntPtr lpIconName);
 
+		[DllImport(User, CharSet = CharSet.Auto)]
+		public static extern bool GetMonitorInfo(IntPtr hMonitor, ref MonitorInfo lpmi);
+
+		[DllImport(User)]
+		public static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+
+		[DllImport(User, SetLastError = true)]
+		public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
 		[DllImport(User)]
 		public static extern IntPtr DefWindowProc(IntPtr handle, uint msg, int min, int max);
 		#endregion
@@ -540,6 +591,15 @@ namespace PixelEngine
 		{
 			public int X;
 			public int Y;
+		}
+
+		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+		internal struct MonitorInfo
+		{
+			public int Size;
+			public Rect Monitor;
+			public Rect WorkArea;
+			public uint Flags;
 		}
 
 		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
