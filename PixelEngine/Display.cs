@@ -65,6 +65,9 @@ namespace PixelEngine
 		// Create the window using the winapi
 		private protected virtual void CreateWindow()
 		{
+			if (string.IsNullOrWhiteSpace(AppName))
+				AppName = GetType().Name;
+
 			Handle = CreateWindowEx(0, ClassName, AppName, (uint)(WindowStyles.OverlappedWindow | WindowStyles.Visible),
 					0, 0, ScreenWidth, ScreenHeight, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
 				

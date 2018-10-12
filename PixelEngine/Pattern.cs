@@ -13,15 +13,15 @@ namespace PixelEngine
 		public static readonly Dictionary<char, Pixel> DefaultPallete
 			= new Dictionary<char, Pixel>()
 			{
-				[' '] = Pixel.White,
-				['k'] = Pixel.Black,
-				['r'] = Pixel.Red,
-				['g'] = Pixel.Green,
-				['b'] = Pixel.Blue,
-				['c'] = Pixel.Cyan,
-				['m'] = Pixel.Magenta,
-				['y'] = Pixel.Yellow,
-				['.'] = Pixel.Grey
+				[' '] = Pixel.Presets.White,
+				['k'] = Pixel.Presets.Black,
+				['r'] = Pixel.Presets.Red,
+				['g'] = Pixel.Presets.Green,
+				['b'] = Pixel.Presets.Blue,
+				['c'] = Pixel.Presets.Cyan,
+				['m'] = Pixel.Presets.Magenta,
+				['y'] = Pixel.Presets.Yellow,
+				['.'] = Pixel.Presets.Grey
 			};
 
 		public Pattern(int w, int h, string pattern, Dictionary<char, Pixel> pallete)
@@ -32,7 +32,7 @@ namespace PixelEngine
 			{
 				if (pallete.ContainsKey(c))
 					return pallete[c];
-				return Pixel.Black;
+				return Pixel.Presets.Black;
 			}
 
 			if (pallete == null)

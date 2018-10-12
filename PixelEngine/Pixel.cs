@@ -1,4 +1,6 @@
-﻿namespace PixelEngine
+﻿using System;
+
+namespace PixelEngine
 {
 	public struct Pixel
 	{
@@ -33,19 +35,49 @@
 			return new Pixel(vals[0], vals[1], vals[2], vals[3]);
 		}
 
-		public static readonly Pixel White = new Pixel(255, 255, 255);
-		public static readonly Pixel Grey = new Pixel(192, 192, 192);
-		public static readonly Pixel Red = new Pixel(255, 0, 0);
-		public static readonly Pixel Yellow = new Pixel(255, 255, 0);
-		public static readonly Pixel Green = new Pixel(0, 255, 0);
-		public static readonly Pixel Cyan = new Pixel(0, 255, 255);
-		public static readonly Pixel Blue = new Pixel(0, 0, 255);
-		public static readonly Pixel Magenta = new Pixel(255, 0, 255);
-		public static readonly Pixel Black = new Pixel(0, 0, 0);
+		#region Presets
+		public enum Presets : uint
+		{
+			White = 0xffffff,
+			Grey = 0xa9a9a9,
+			Red = 0xff0000,
+			Yellow = 0xffff00,
+			Green = 0x00ff00,
+			Cyan = 0x00ffff,
+			Blue = 0x0000ff,
+			Magenta = 0xff00ff,
+			Brown = 0x9a6324,
+			Orange = 0xf58231,
+			Purple = 0x911eb4,
+			Lime = 0xbfef45,
+			Pink = 0xfabebe,
+			Teal = 0x469990,
+			Lavender = 0xe6beff,
+			Beige = 0xfffac8,
+			Maroon = 0x800000,
+			Mint = 0xaaffc3,
+			Olive = 0x808000,
+			Apricot = 0xffd8b1,
+			Navy = 0x000075,
+			Black = 0x000000,
+		} 
+
 		public static readonly Pixel Empty = new Pixel(0, 0, 0, 0);
+		#endregion
 
 		public static bool operator ==(Pixel a, Pixel b) => (a.A == b.A) && (a.R == b.R) && (a.G == b.G) && (a.B == b.B);
 		public static bool operator !=(Pixel a, Pixel b) => !(a == b);
+
+		public static implicit operator Pixel(Presets p)
+		{
+			string hex = p.ToString("X");
+
+			byte r = (byte)Convert.ToUInt32(hex.Substring(2, 2), 16);
+			byte g = (byte)Convert.ToUInt32(hex.Substring(4, 2), 16);
+			byte b = (byte)Convert.ToUInt32(hex.Substring(6, 2), 16);
+
+			return new Pixel(r, g, b);
+		}
 
 		public override bool Equals(object obj)
 		{
