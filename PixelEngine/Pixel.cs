@@ -26,12 +26,12 @@ namespace PixelEngine
 
 		public static Pixel Random()
 		{
-			byte[] vals = MathHelper.RandomBytes(3);
+			byte[] vals = Randoms.RandomBytes(3);
 			return new Pixel(vals[0], vals[1], vals[2]);
 		}
 		public static Pixel RandomAlpha()
 		{
-			byte[] vals = MathHelper.RandomBytes(4);
+			byte[] vals = Randoms.RandomBytes(4);
 			return new Pixel(vals[0], vals[1], vals[2], vals[3]);
 		}
 

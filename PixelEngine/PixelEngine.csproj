@@ -57,6 +57,7 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Audio.cs" />
     <Compile Include="Button.cs" />
     <Compile Include="Direct2D.cs" />
     <Compile Include="Display.cs" />
@@ -67,7 +68,7 @@
     <Compile Include="Pixel.cs" />
     <Compile Include="Point.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="MathHelper.cs" />
+    <Compile Include="Randoms.cs" />
     <Compile Include="Sprite.cs" />
     <Compile Include="Timer.cs" />
     <Compile Include="Windows.cs" />

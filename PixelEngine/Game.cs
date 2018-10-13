@@ -356,6 +356,13 @@ namespace PixelEngine
 		protected float Lerp(float start, float end, float amt) => Map(Constrain(amt, 0, 1), 0, 1, start, end);
 		protected float Distance(float x1, float y1, float x2, float y2) => Power(Power(x2 - x1, 2) + Power(y2 - y1, 2), 1 / 2);
 
+		protected void Seed(int s) => Randoms.Seed(s);
+		protected int Random(int max) => Random(0, max);
+		protected int Random(int min, int max) => Randoms.RandomInt(min, max);
+		protected float Random() => Random(0f, 1f);
+		protected float Random(float max) => Random(0, max);
+		protected float Random(float min, float max) => Randoms.RandomFloat(min, max);
+
 		protected float Degrees(float radians) => (float)(radians * 180 / Math.PI);
 		protected float Radians(float degrees) => (float)(degrees * Math.PI / 180);
 		#endregion
@@ -846,7 +853,7 @@ namespace PixelEngine
 				for (int j = 0; j < h; j++)
 					Draw(p.X + i, p.Y + j, spr[i + op.X, j + op.Y]);
 		}
-		public void DrawText(Point p, string text, Pixel col, float fontSize = 1)
+		public void DrawText(Point p, string text, Pixel col, float size = 1)
 		{
 			Pixel.Mode prev = PixelMode;
 			if (col.A != 255)
@@ -861,21 +868,21 @@ namespace PixelEngine
 			{
 				if (c == '\n')
 				{
-					sx = 0; sy += (int)(8 * fontSize);
+					sx = 0; sy += (int)(8 * size);
 				}
 				else
 				{
 					int ox = (c - 32) % 16;
 					int oy = (c - 32) / 16;
 
-					if (fontSize > 1)
+					if (size > 1)
 					{
 						for (int i = 0; i < 8; i++)
 							for (int j = 0; j < 8; j++)
 								if (fontSprite[i + ox * 8, j + oy * 8].R > 0)
-									for (int ni = 0; ni < fontSize; ni++)
-										for (int nj = 0; nj < fontSize; nj++)
-											Draw(p.X + sx + (int)(i * fontSize) + ni, p.Y + sy + (int)(j * fontSize) + nj, col);
+									for (int ni = 0; ni < size; ni++)
+										for (int nj = 0; nj < size; nj++)
+											Draw(p.X + sx + (int)(i * size) + ni, p.Y + sy + (int)(j * size) + nj, col);
 					}
 					else
 					{
@@ -884,7 +891,7 @@ namespace PixelEngine
 								if (fontSprite[i + ox * 8, j + oy * 8].R > 0)
 									Draw(p.X + sx + i, p.Y + sy + j, col);
 					}
-					sx += (int)(8 * fontSize);
+					sx += (int)(8 * size);
 				}
 			}
 
