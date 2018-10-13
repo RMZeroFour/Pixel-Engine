@@ -11,23 +11,32 @@ namespace Examples
 {
 	public class Snake : Game
 	{
-		private List<SnakeSegment> snake;
+		private List<SnakeSegment> snake; // Store all segments of snake
+		
+		// Coordinates of the food
 		private int foodX;
 		private int foodY;
-		private int score;
-		private int dir;
-		private bool dead;
-
-		private Random rnd;
-		private bool started;
-
+		
+		private int score; // Player's score
+		
+		private int dir; // Direction of snake
+		
+		private bool dead; // Is the snake dead?
+		private bool started; // Has the game been started?
+		
+		private Random rnd; // Store an RNG
+		
 		static void Main(string[] args)
 		{
+			// Create an instance
 			Snake s = new Snake();
+			// Construct the game
 			s.Construct(500, 500, 10, 10, 30);
+			// Start the game
 			s.Start();
 		}
 
+		// A part of the snake
 		private struct SnakeSegment
 		{
 			public SnakeSegment(int x, int y) : this()
@@ -36,20 +45,25 @@ namespace Examples
 				this.Y = y;
 			}
 
-			public int X { get; private set; }
-			public int Y { get; private set; }
+			public int X { get; private set; } // X location
+			public int Y { get; private set; } // Y location
 		}
 
+		// Set the title of the window
 		public Snake() => AppName = "SNAKE!";
 
+		// Start the game
 		public override void OnCreate() => Reset();
 
+		// Reset all fields
 		private void Reset()
 		{
+			// Init and make the snake
 			snake = new List<SnakeSegment>();
 			for (int i = 0; i < 9; i++)
 				snake.Add(new SnakeSegment(i + 20, 15));
 
+			// Set the variables to default values
 			foodX = 30;
 			foodY = 15;
 			score = 0;
@@ -63,7 +77,9 @@ namespace Examples
 		{
 			if (!started)
 			{
+				// If not started then set title
 				AppName = "SNAKE! Press 'Enter' To Start";
+				// Check if game has to be started
 				if (GetKey(Key.Enter).Pressed)
 				{
 					Reset();
@@ -71,9 +87,11 @@ namespace Examples
 				}
 			}
 
+			// End game if snake is dead
 			if (dead)
 				started = false;
 
+			// Turn right
 			if (GetKey(Key.Right).Pressed)
 			{
 				dir++;
@@ -81,6 +99,7 @@ namespace Examples
 					dir = 0;
 			}
 
+			// Turn left
 			if (GetKey(Key.Left).Pressed)
 			{
 				dir--;
@@ -90,6 +109,7 @@ namespace Examples
 
 			if (started)
 			{
+				// Move in the direction
 				switch (dir)
 				{
 					case 0: // UP
@@ -106,8 +126,10 @@ namespace Examples
 						break;
 				}
 
+				// Pop the tail
 				snake.RemoveAt(snake.Count - 1);
-
+				
+				// Check collision with food
 				if (snake[0].X == foodX && snake[0].Y == foodY)
 				{
 					score++;
@@ -116,10 +138,12 @@ namespace Examples
 
 					snake.Add(new SnakeSegment(snake[snake.Count - 1].X, snake[snake.Count - 1].Y));
 				}
-
+				
+				// Check wall collision
 				if (snake[0].X < -1 || snake[0].X >= ScreenWidth / PixWidth + 1 || snake[0].Y < -1 || snake[0].Y >= ScreenHeight / PixHeight + 1)
 					dead = true;
-
+				
+				// Check self collision
 				for (int i = 1; i < snake.Count; i++)
 				{
 					if (snake[i].X == snake[0].X && snake[i].Y == snake[0].Y)
@@ -131,18 +155,24 @@ namespace Examples
 
 			DrawRect(new Point(0, 0), ScreenWidth / PixWidth - 1, ScreenHeight / PixHeight - 1, Pixel.Grey);
 
+			// Render snake
 			for (int i = 1; i < snake.Count; i++)
 				Draw(snake[i].X, snake[i].Y, dead ? Pixel.Blue : Pixel.Yellow);
-
+			
+			// Draw snake head
 			Draw(snake[0].X, snake[0].Y, dead ? Pixel.Green : Pixel.Magenta);
-
+			
+			// Draw food
 			Draw(foodX, foodY, Pixel.Red);
 		}
 
+		// Set random location for food
 		private void RandomizeFood()
 		{
+			// Loop while the food is not on empty cell
 			while (DrawTarget[foodX, foodY] != Pixel.Black)
 			{
+				// Set food to random point
 				foodX = rnd.Next(ScreenWidth);
 				foodY = rnd.Next(ScreenHeight);
 			}
