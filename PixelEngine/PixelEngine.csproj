@@ -57,7 +57,7 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Audio.cs" />
+    <Compile Include="Sound.cs" />
     <Compile Include="Button.cs" />
     <Compile Include="Direct2D.cs" />
     <Compile Include="Display.cs" />

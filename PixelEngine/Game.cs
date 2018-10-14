@@ -40,6 +40,8 @@ namespace PixelEngine
 			}
 		}
 
+		private List<Sound> samples;
+
 		private Thread gameLoop;
 
 		private float pixBlend = 1;
@@ -175,10 +177,15 @@ namespace PixelEngine
 
 				OnDestroy();
 
-				canvas.Dispose();
 
-				PostMessage(Handle, (uint)WM.DESTROY, IntPtr.Zero, IntPtr.Zero);
 			}
+
+			foreach (Sound s in samples)
+				StopSound(s);
+
+			canvas.Dispose();
+
+			PostMessage(Handle, (uint)WM.DESTROY, IntPtr.Zero, IntPtr.Zero);
 		}
 		private void RenderImage()
 		{
@@ -903,6 +910,19 @@ namespace PixelEngine
 			for (int i = 0; i < pixels.Length; i++)
 				pixels[i] = p;
 		}
+		#endregion
+
+		#region Audio
+		public Sound LoadSound(string path)
+		{
+			if (samples == null)
+				samples = new List<Sound>();
+			Sound s = new Sound(path);
+			samples.Add(s);
+			return s;
+		}
+		public void PlaySound(Sound s) => s.Play();
+		public void StopSound(Sound s) => s.Stop();
 		#endregion
 
 		#region Functionality

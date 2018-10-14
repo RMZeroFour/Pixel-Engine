@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace PixelEngine
 {
@@ -23,6 +24,7 @@ namespace PixelEngine
 
 		private const string User = "user32.dll";
 		private const string Kernel = "kernel32.dll";
+		private const string Winmm = "winmm.dll";
 		#endregion
 
 		#region Enums
@@ -563,6 +565,9 @@ namespace PixelEngine
 
 		[DllImport(User)]
 		public static extern IntPtr DefWindowProc(IntPtr handle, uint msg, int min, int max);
+	
+		[DllImport(Winmm, EntryPoint = "mciSendString")]
+		public static extern int MciSendString(string command, StringBuilder buffer, int bufferSize, IntPtr hwndCallback);
 		#endregion
 
 		#region Structs
@@ -601,7 +606,7 @@ namespace PixelEngine
 			public Rect WorkArea;
 			public uint Flags;
 		}
-
+		
 		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
 		public struct WindowClassEx
 		{
