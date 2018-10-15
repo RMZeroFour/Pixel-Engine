@@ -14,6 +14,8 @@ namespace PixelEngine
 
 		public const int WheelDelta = 120;
 
+		public const int WomDone = 0x3BD;
+
 		public const int MonitorDefaultNearest = 2;
 
 		public static readonly IntPtr WindowTop = new IntPtr(0);
@@ -21,6 +23,12 @@ namespace PixelEngine
 		public const int ApplicationIcon = 32512;
 		public const int ArrowCursor = 32512;
 		public const int ColorWindow = 5;
+
+		public const int WaveFormatPcm = 1;
+		public const int WaveMapper = -1;
+		public const int WHdrPrepared = 2;
+
+		public const int CallbackFunction = 0x30000;
 
 		private const string User = "user32.dll";
 		private const string Kernel = "kernel32.dll";
@@ -504,6 +512,10 @@ namespace PixelEngine
 		}
 		#endregion
 
+		#region Delegates
+		public delegate void WaveDelegate(IntPtr hdrvr, int uMsg, int dwUser, ref WaveHdr wavhdr, int dwParam2);
+		#endregion
+
 		#region Methods
 		[DllImport(User)]
 		public static extern void PostQuitMessage(int exitCode);
@@ -568,6 +580,42 @@ namespace PixelEngine
 	
 		[DllImport(Winmm, EntryPoint = "mciSendString")]
 		public static extern int MciSendString(string command, StringBuilder buffer, int bufferSize, IntPtr hwndCallback);
+
+		[DllImport(Winmm, EntryPoint = "waveOutGetNumDevs")]
+		public static extern int WaveOutGetNumDevs();
+
+		[DllImport(Winmm, EntryPoint = "waveOutPrepareHeader")]
+		public static extern int WaveOutPrepareHeader(IntPtr hWaveOut, ref WaveHdr lpWaveOutHdr, int uSize);
+
+		[DllImport(Winmm, EntryPoint = "waveOutUnprepareHeader")]
+		public static extern int WaveOutUnprepareHeader(IntPtr hWaveOut, ref WaveHdr lpWaveOutHdr, int uSize);
+
+		[DllImport(Winmm, EntryPoint = "waveOutWrite")]
+		public static extern int WaveOutWrite(IntPtr hWaveOut, ref WaveHdr lpWaveOutHdr, int uSize);
+
+		[DllImport(Winmm, EntryPoint = "waveOutOpen")]
+		public static extern int WaveOutOpen(out IntPtr hWaveOut, int uDeviceID, WaveFormatEx lpFormat, WaveDelegate dwCallback, int dwInstance, int dwFlags);
+
+		[DllImport(Winmm, EntryPoint = "waveOutReset")]
+		public static extern int WaveOutReset(IntPtr hWaveOut);
+
+		[DllImport(Winmm, EntryPoint = "waveOutClose")]
+		public static extern int WaveOutClose(IntPtr hWaveOut);
+
+		[DllImport(Winmm, EntryPoint = "waveOutPause")]
+		public static extern int WaveOutPause(IntPtr hWaveOut);
+
+		[DllImport(Winmm, EntryPoint = "waveOutRestart")]
+		public static extern int WaveOutRestart(IntPtr hWaveOut);
+
+		[DllImport(Winmm, EntryPoint = "waveOutGetPosition")]
+		public static extern int WaveOutGetPosition(IntPtr hWaveOut, out int lpInfo, int uSize);
+
+		[DllImport(Winmm, EntryPoint = "waveOutSetVolume")]
+		public static extern int WaveOutSetVolume(IntPtr hWaveOut, int dwVolume);
+
+		[DllImport(Winmm, EntryPoint = "waveOutGetVolume")]
+		public static extern int WaveOutGetVolume(IntPtr hWaveOut, out int dwVolume);
 		#endregion
 
 		#region Structs
@@ -606,7 +654,32 @@ namespace PixelEngine
 			public Rect WorkArea;
 			public uint Flags;
 		}
-		
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct WaveHdr
+		{
+			public IntPtr Data;
+			public int BufferLength;
+			public int BytesRecorded;
+			public IntPtr User;
+			public int Flags;
+			public int Loops;
+			public IntPtr Next;
+			public int Reserved;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public class WaveFormatEx
+		{
+			public short FormatTag;
+			public short Channels;
+			public int SamplesPerSec;
+			public int AvgBytesPerSec;
+			public short BlockAlign;
+			public short BitsPerSample;
+			public short Size;
+		}
+
 		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
 		public struct WindowClassEx
 		{

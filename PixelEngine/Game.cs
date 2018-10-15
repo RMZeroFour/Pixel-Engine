@@ -40,9 +40,10 @@ namespace PixelEngine
 			}
 		}
 
-		private List<Sound> samples;
-
 		private Thread gameLoop;
+
+		private AudioEngine audio;
+		private Direct2D canvas;
 
 		private float pixBlend = 1;
 
@@ -51,8 +52,6 @@ namespace PixelEngine
 		private Pixel[] prev;
 
 		private static WindowProcess proc;
-
-		private Direct2D canvas;
 
 		private bool active;
 		private bool paused;
@@ -123,6 +122,19 @@ namespace PixelEngine
 
 			canvas.Init(this);
 		}
+		public void EnableSound()
+		{
+			if (audio == null)
+			{
+				audio = new AudioEngine
+				{
+					OnSoundCreate = this.OnSoundCreate,
+					OnSoundFilter = this.OnSoundFilter
+				};
+			}
+
+			audio.CreateAudio();
+		}
 		private void GameLoop()
 		{
 			canvas = new Direct2D();
@@ -176,12 +188,10 @@ namespace PixelEngine
 				}
 
 				OnDestroy();
-
-
 			}
 
-			foreach (Sound s in samples)
-				StopSound(s);
+			if (audio != null)
+				audio.DestroyAudio();
 
 			canvas.Dispose();
 
@@ -225,7 +235,7 @@ namespace PixelEngine
 					}
 				}
 
-				if(mouse[i].Down)
+				if (mouse[i].Down)
 					OnMouseDown((Mouse)i);
 
 				oldMouse[i] = newMouse[i];
@@ -345,7 +355,7 @@ namespace PixelEngine
 		protected void Finish() => active = false;
 		protected void NoLoop() => paused = true;
 		protected void Loop() => paused = false;
-		
+
 		protected void ScrollReset() => MouseScroll = 0;
 
 		protected Button GetKey(Key k) => keyboard[(int)k];
@@ -440,7 +450,7 @@ namespace PixelEngine
 
 			Handle = CreateWindowEx(0, ClassName, AppName, (uint)(WindowStyles.OverlappedWindow | WindowStyles.Visible),
 					0, 0, ScreenWidth, ScreenHeight, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
-				 
+
 			GetClientRect(Handle, out Rect r);
 			ClientRect = r;
 
@@ -609,7 +619,7 @@ namespace PixelEngine
 				Draw(new Point(p.X - x0, p.Y + y0), col);
 				Draw(new Point(p.X - y0, p.Y + x0), col);
 				Draw(new Point(p.X + y0, p.Y + x0), col);
-				Draw(new Point(p.X + x0, p.Y + y0), col); 
+				Draw(new Point(p.X + x0, p.Y + y0), col);
 
 				if (d < 0)
 					d += 4 * x0++ + 6;
@@ -626,7 +636,7 @@ namespace PixelEngine
 			if (radius == 0)
 				return;
 
-			void MakeLine (int sx, int ex, int ny)
+			void MakeLine(int sx, int ex, int ny)
 			{
 				for (int i = sx; i <= ex; i++)
 					Draw(new Point(i, ny), col);
@@ -913,16 +923,25 @@ namespace PixelEngine
 		#endregion
 
 		#region Audio
+		public virtual float OnSoundCreate(int channels, float globalTime, float timeStep) => 0;
+		public virtual float OnSoundFilter(int channels, float globalTime, float sample) => sample;
+
 		public Sound LoadSound(string path)
 		{
-			if (samples == null)
-				samples = new List<Sound>();
-			Sound s = new Sound(path);
-			samples.Add(s);
-			return s;
+			if (audio != null)
+				return audio.LoadSound(path);
+			return null;
 		}
-		public void PlaySound(Sound s) => s.Play();
-		public void StopSound(Sound s) => s.Stop();
+		public void PlaySound(Sound s)
+		{
+			if (audio != null)
+				audio.PlaySound(s);
+		}
+		public void StopSound(Sound s)
+		{
+			if (audio != null)
+				audio.StopSound(s);
+		}
 		#endregion
 
 		#region Functionality
