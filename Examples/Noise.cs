@@ -9,7 +9,7 @@ namespace Examples
 		{
 			// Create an instance
 			Noise n = new Noise();
-			n.Construct(500, 500, 10, 10); // Construct the game
+			n.Construct(); // Construct the game
 			n.Start(); // Start and show a window
 		}
 
@@ -19,8 +19,8 @@ namespace Examples
 		public override void OnUpdate(TimeSpan elapsed)
 		{
 			// Loop through all the pixels
-			for (int i = 0; i < ScreenWidth / PixWidth; i++)
-				for (int j = 0; j < ScreenHeight / PixHeight; j++)
+			for (int i = 0; i < ScreenWidth; i++)
+				for (int j = 0; j < ScreenHeight; j++)
 					Draw(i, j, Pixel.Random()); // Draw a random pixel
 		}
 	}
