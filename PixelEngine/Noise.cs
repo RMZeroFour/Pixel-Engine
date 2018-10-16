@@ -4,11 +4,11 @@ namespace PixelEngine
 {
 	public static class Noise
 	{
-		public static float[] Perlin1D(int count, float[] seed, int octaves, float bias)
+		public static float[] Calculate(float[] seed, int octaves, float bias)
 		{
-			float[] output = new float[count];
+			float[] output = new float[seed.Length];
 
-			for (int x = 0; x < count; x++)
+			for (int x = 0; x < seed.Length; x++)
 			{
 				float noise = 0.0f;
 				float scaleAcc = 0.0f;
@@ -16,16 +16,16 @@ namespace PixelEngine
 
 				for (int o = 0; o < octaves; o++)
 				{
-					int pitch = count >> o;
+					int pitch = seed.Length >> o;
 					int sampleA = x / pitch * pitch;
-					int sampleB = (sampleA + pitch) % count;
+					int sampleB = (sampleA + pitch) % seed.Length;
 
-					float fBlend = (x - sampleA) / (float)pitch;
+					float blend = (x - sampleA) / (float)pitch;
 
-					float fSample = (1.0f - fBlend) * seed[sampleA] + fBlend * seed[sampleB];
+					float sample = (1.0f - blend) * seed[sampleA] + blend * seed[sampleB];
 
 					scaleAcc += scale;
-					noise += fSample * scale;
+					noise += sample * scale;
 					scale = scale / bias;
 				}
 
@@ -35,39 +35,42 @@ namespace PixelEngine
 			return output;
 		}
 
-		public static float[,] Perlin2D(int width, int height, float[] seed, int octaves, float bias)
+		public static float[,] Calculate(float[,] seed, int octaves, float bias)
 		{
+			int width = seed.GetLength(0);
+			int height = seed.GetLength(1);
+
 			float[,] output = new float[width, height];
 
 			for (int x = 0; x < width; x++)
 			{
 				for (int y = 0; y < height; y++)
 				{
-					float fNoise = 0.0f;
-					float fScaleAcc = 0.0f;
-					float fScale = 1.0f;
+					float noise = 0.0f;
+					float scaleAcc = 0.0f;
+					float scale = 1.0f;
 
 					for (int o = 0; o < octaves; o++)
 					{
-						int nPitch = width >> o;
-						int nSampleX1 = (x / nPitch) * nPitch;
-						int nSampleY1 = (y / nPitch) * nPitch;
+						int pitch = width >> o;
+						int sampleX1 = (x / pitch) * pitch;
+						int sampleY1 = (y / pitch) * pitch;
 
-						int nSampleX2 = (nSampleX1 + nPitch) % width;
-						int nSampleY2 = (nSampleY1 + nPitch) % width;
+						int sampleX2 = (sampleX1 + pitch) % width;
+						int sampleY2 = (sampleY1 + pitch) % width;
 
-						float fBlendX = (float)(x - nSampleX1) / nPitch;
-						float fBlendY = (float)(y - nSampleY1) / nPitch;
+						float blendX = (float)(x - sampleX1) / pitch;
+						float blendY = (float)(y - sampleY1) / pitch;
 
-						float fSampleT = (1.0f - fBlendX) * seed[nSampleY1 * width + nSampleX1] + fBlendX * seed[nSampleY1 * width + nSampleX2];
-						float fSampleB = (1.0f - fBlendX) * seed[nSampleY2 * width + nSampleX1] + fBlendX * seed[nSampleY2 * width + nSampleX2];
+						float sampleT = (1.0f - blendX) * seed[sampleX1, sampleY1] + blendX * seed[sampleX2, sampleY1];
+						float sampleB = (1.0f - blendX) * seed[sampleX1, sampleY2] + blendX * seed[sampleX2, sampleY2];
 
-						fScaleAcc += fScale;
-						fNoise += (fBlendY * (fSampleB - fSampleT) + fSampleT) * fScale;
-						fScale = fScale / bias;
+						scaleAcc += scale;
+						noise += (blendY * (sampleB - sampleT) + sampleT) * scale;
+						scale = scale / bias;
 					}
 
-					output[x, y] = fNoise / fScaleAcc;
+					output[x, y] = noise / scaleAcc;
 				}
 			}
 

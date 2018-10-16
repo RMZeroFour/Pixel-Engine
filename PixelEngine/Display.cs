@@ -22,6 +22,9 @@ namespace PixelEngine
 		public int PixWidth { get; private set; }
 		public int PixHeight { get; private set; }
 
+		private protected int windowWidth;
+		private protected int windowHeight;
+
 		// Title of the app
 		public virtual string AppName
 		{
@@ -44,12 +47,15 @@ namespace PixelEngine
 		protected internal IntPtr Handle { get; protected set; }
 
 		// Assign the window details
-		internal void Construct(int width = 500, int height = 500, int pixWidth = 5, int pixHeight = 5)
+		internal void Construct(int width = 100, int height = 100, int pixWidth = 5, int pixHeight = 5)
 		{
 			ScreenWidth = width;
 			ScreenHeight = height;
 			PixWidth = pixWidth;
 			PixHeight = pixHeight;
+
+			windowWidth = ScreenWidth * PixWidth;
+			windowHeight = ScreenHeight * PixHeight;
 		}
 
 		// Start the windows message pump
@@ -69,7 +75,7 @@ namespace PixelEngine
 				AppName = GetType().Name;
 
 			Handle = CreateWindowEx(0, ClassName, AppName, (uint)(WindowStyles.OverlappedWindow | WindowStyles.Visible),
-					0, 0, ScreenWidth, ScreenHeight, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+					0, 0, windowWidth, windowWidth, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
 				
 			GetClientRect(Handle, out Rect r);
 			ClientRect = r;

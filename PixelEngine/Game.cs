@@ -25,10 +25,7 @@ namespace PixelEngine
 			get => drawTarget;
 			set => drawTarget = value ?? defDrawTarget;
 		}
-
-		protected int Rows => ScreenWidth / PixWidth;
-		protected int Cols => ScreenHeight / PixHeight;
-
+		
 		public override string AppName
 		{
 			get => base.AppName;
@@ -85,7 +82,7 @@ namespace PixelEngine
 
 			MessagePump();
 		}
-		public void Construct(int width = 500, int height = 500, int pixWidth = 5, int pixHeight = 5, int frameRate = 60)
+		public void Construct(int width = 100, int height = 100, int pixWidth = 5, int pixHeight = 5, int frameRate = 60)
 		{
 			base.Construct(width, height, pixWidth, pixHeight);
 			FrameRate = frameRate;
@@ -115,8 +112,11 @@ namespace PixelEngine
 			GetClientRect(Handle, out Rect r);
 			ClientRect = r;
 
-			ScreenWidth = r.Right - r.Left;
-			ScreenHeight = r.Bottom - r.Top;
+			windowWidth = r.Right - r.Left;
+			windowHeight = r.Bottom - r.Top;
+
+			ScreenWidth = windowWidth / PixWidth;
+			ScreenHeight = windowHeight / PixHeight;
 
 			HandleDrawTarget();
 
@@ -270,7 +270,7 @@ namespace PixelEngine
 		}
 		private void HandleDrawTarget()
 		{
-			defDrawTarget = new Sprite(ScreenWidth / PixWidth, ScreenHeight / PixHeight);
+			defDrawTarget = new Sprite(ScreenWidth, ScreenHeight);
 			prev = new Pixel[defDrawTarget.Width * defDrawTarget.Height];
 			DrawTarget = defDrawTarget;
 		}
@@ -449,7 +449,7 @@ namespace PixelEngine
 				AppName = GetType().Name;
 
 			Handle = CreateWindowEx(0, ClassName, AppName, (uint)(WindowStyles.OverlappedWindow | WindowStyles.Visible),
-					0, 0, ScreenWidth, ScreenHeight, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+					0, 0, windowWidth, windowWidth, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
 
 			GetClientRect(Handle, out Rect r);
 			ClientRect = r;
