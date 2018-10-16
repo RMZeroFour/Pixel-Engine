@@ -30,9 +30,9 @@ namespace Examples
 		{
 			for (int p = 0; p < s.Length; p++)
 			{
-				int i = y * Rows + x + p;
-				int nx = i % Rows;
-				int ny = i / Rows;
+				int i = y * ScreenWidth + x + p;
+				int nx = i % ScreenWidth;
+				int ny = i / ScreenWidth;
 				grid[nx, ny] = (s[p] == '#');
 			}
 		}
@@ -41,8 +41,8 @@ namespace Examples
 		{
 			// Init the grids
 			// We need two buffers so that cells don't change due to looping in a fixed order
-			grid = new bool[Rows, Cols];
-			newGrid = new bool[Rows, Cols];
+			grid = new bool[ScreenWidth, ScreenHeight];
+			newGrid = new bool[ScreenWidth, ScreenHeight];
 
 			// Make two gosper guns
 			MakeGosperGun(10, 25);
@@ -76,10 +76,10 @@ namespace Examples
 			{
 				// Update all cells
 				UpdateCells();
-				
+
 				// Switch buffer
-				for (int i = 0; i < Rows; i++)
-					for (int j = 0; j < Cols; j++)
+				for (int i = 0; i < ScreenWidth; i++)
+					for (int j = 0; j < ScreenHeight; j++)
 						grid[i, j] = newGrid[i, j];
 			}
 		}
@@ -89,14 +89,14 @@ namespace Examples
 		{
 			int GetCell(int a, int b)
 			{
-				if (a < 0 || a >= Rows || b < 0 || b >= Cols)
+				if (a < 0 || a >= ScreenWidth || b < 0 || b >= ScreenHeight)
 					return 0;
 				return grid[a, b] ? 1 : 0;
 			}
 
-			for (int x = 0; x < Rows; x++)
+			for (int x = 0; x < ScreenWidth; x++)
 			{
-				for (int y = 0; y < Cols; y++)
+				for (int y = 0; y < ScreenHeight; y++)
 				{
 					int neighbors = GetCell(x - 1, y - 1) + GetCell(x - 0, y - 1) + GetCell(x + 1, y - 1) +
 									GetCell(x - 1, y + 0) + 0 + GetCell(x + 1, y + 0) +
@@ -110,8 +110,8 @@ namespace Examples
 		// Draw the cells
 		private void DrawCells()
 		{
-			for (int i = 0; i < Rows; i++)
-				for (int j = 0; j < Cols; j++)
+			for (int i = 0; i < ScreenWidth; i++)
+				for (int j = 0; j < ScreenHeight; j++)
 					if (grid[i, j])
 						Draw(i, j, alive);
 		}
