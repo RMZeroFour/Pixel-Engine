@@ -12,7 +12,7 @@ namespace PixelEngine
 	{
 		#region Members
 		protected Pixel.Mode PixelMode { get; set; } = Pixel.Mode.Normal;
-		protected float PixelBlend { get => pixBlend; set => pixBlend = value < 0 ? 0 : value > 1 ? 1 : value; }
+		protected float PixelBlend { get => pixBlend; set => pixBlend = Constrain(value, 0, 1); }
 		protected DateTime StartTime { get; set; }
 		protected long FrameCount { get; private set; }
 		protected bool Focus { get; private set; }
@@ -20,12 +20,24 @@ namespace PixelEngine
 		protected int MouseX { get; private set; }
 		protected int MouseY { get; private set; }
 		protected int MouseScroll { get; private set; }
+		protected float Volume
+		{
+			get
+			{
+				return audio != null ? audio.Volume : 0;
+			}
+			set
+			{
+				if (audio != null)
+					audio.Volume = Constrain(value, 0, 1);
+			}
+		}
 		protected Sprite DrawTarget
 		{
 			get => drawTarget;
 			set => drawTarget = value ?? defDrawTarget;
 		}
-		
+
 		public override string AppName
 		{
 			get => base.AppName;
@@ -353,6 +365,7 @@ namespace PixelEngine
 
 		protected void Continue() => active = true;
 		protected void Finish() => active = false;
+
 		protected void NoLoop() => paused = true;
 		protected void Loop() => paused = false;
 
@@ -360,6 +373,8 @@ namespace PixelEngine
 
 		protected Button GetKey(Key k) => keyboard[(int)k];
 		protected Button GetMouse(Mouse m) => mouse[(int)m];
+
+		protected Pixel GetScreenPixel(int x, int y) => DrawTarget[x, y];
 
 		protected float Sin(float val) => (float)Math.Sin(val);
 		protected float Cos(float val) => (float)Math.Cos(val);
@@ -373,6 +388,7 @@ namespace PixelEngine
 		protected float Lerp(float start, float end, float amt) => Map(Constrain(amt, 0, 1), 0, 1, start, end);
 		protected float Distance(float x1, float y1, float x2, float y2) => Power(Power(x2 - x1, 2) + Power(y2 - y1, 2), 1 / 2);
 
+		protected void Seed() => Randoms.Seed((int)((DateTime.Now - StartTime).Ticks % int.MaxValue));
 		protected void Seed(int s) => Randoms.Seed(s);
 		protected int Random(int max) => Random(0, max);
 		protected int Random(int min, int max) => Randoms.RandomInt(min, max);
@@ -437,7 +453,7 @@ namespace PixelEngine
 			// Define window furniture
 			uint styleEx = (uint)(WindowStylesEx.AppWindow | WindowStylesEx.WindowEdge);
 			uint style = (uint)(WindowStyles.Caption | WindowStyles.SysMenu | WindowStyles.Visible);
-			Rect winRect = new Rect() { Left = 0, Top = 0, Right = ScreenWidth, Bottom = ScreenHeight };
+			Rect winRect = new Rect() { Left = 0, Top = 0, Right = windowWidth, Bottom = windowHeight };
 
 			// Keep client size as requested
 			AdjustWindowRectEx(ref winRect, style, false, styleEx);
@@ -449,7 +465,7 @@ namespace PixelEngine
 				AppName = GetType().Name;
 
 			Handle = CreateWindowEx(0, ClassName, AppName, (uint)(WindowStyles.OverlappedWindow | WindowStyles.Visible),
-					0, 0, windowWidth, windowWidth, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+					0, 0, width, height, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
 
 			GetClientRect(Handle, out Rect r);
 			ClientRect = r;
@@ -509,7 +525,7 @@ namespace PixelEngine
 		}
 		private uint LoWord(uint val) => val & 0xFFFF;
 		private uint HiWord(uint val) => val >> 16;
-		private short MouseWheelDelta(int wParam) => ((short)(wParam >> 16));
+		private short MouseWheelDelta(int wParam) => (short)(wParam >> 16);
 		#endregion
 
 		#region Drawing

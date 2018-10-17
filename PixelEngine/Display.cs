@@ -75,7 +75,7 @@ namespace PixelEngine
 				AppName = GetType().Name;
 
 			Handle = CreateWindowEx(0, ClassName, AppName, (uint)(WindowStyles.OverlappedWindow | WindowStyles.Visible),
-					0, 0, windowWidth, windowWidth, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+					0, 0, windowWidth, windowHeight, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
 				
 			GetClientRect(Handle, out Rect r);
 			ClientRect = r;

@@ -24,14 +24,12 @@ namespace Examples
 		private bool dead; // Is the snake dead?
 		private bool started; // Has the game been started?
 
-		private Random rnd; // Store an RNG
-
 		static void Main(string[] args)
 		{
 			// Create an instance
 			Snake s = new Snake();
 			// Construct the game
-			s.Construct(frameRate: 30);
+			s.Construct(50, 50, 10, 10, 30);
 			// Start the game
 			s.Start();
 		}
@@ -53,7 +51,13 @@ namespace Examples
 		public Snake() => AppName = "SNAKE!";
 
 		// Start the game
-		public override void OnCreate() => Reset();
+		public override void OnCreate()
+		{
+			// Uncomment to make the game fullscreen
+			Fullscreen();
+
+			Reset();
+		}
 
 		// Reset all fields
 		private void Reset()
@@ -70,23 +74,39 @@ namespace Examples
 			dir = 3;
 			dead = false;
 
-			rnd = new Random();
+			Seed();
 		}
 
 		public override void OnUpdate(TimeSpan elapsed)
 		{
-			if (!started)
-			{
-				// If not started then set title
-				AppName = "SNAKE! Press 'Enter' To Start";
-				// Check if game has to be started
-				if (GetKey(Key.Enter).Pressed)
-				{
-					Reset();
-					started = true;
-				}
-			}
+			CheckStart();
+			UpdateSnake();
+			DrawGame();
+		}
 
+		// Draw the game
+		private void DrawGame()
+		{
+			// Clear the screen
+			Clear(Pixel.Presets.Black);
+
+			// Draw the border
+			DrawRect(new Point(0, 0), ScreenWidth - 1, ScreenHeight - 1, Pixel.Presets.Grey);
+
+			// Render snake
+			for (int i = 1; i < snake.Count; i++)
+				Draw(snake[i].X, snake[i].Y, dead ? Pixel.Presets.Blue : Pixel.Presets.Yellow);
+
+			// Draw snake head
+			Draw(snake[0].X, snake[0].Y, dead ? Pixel.Presets.Green : Pixel.Presets.Magenta);
+
+			// Draw food
+			Draw(foodX, foodY, Pixel.Presets.Red);
+		}
+
+		// Update the snake's position
+		private void UpdateSnake()
+		{
 			// End game if snake is dead
 			if (dead)
 				started = false;
@@ -129,52 +149,60 @@ namespace Examples
 				// Pop the tail
 				snake.RemoveAt(snake.Count - 1);
 
-				// Check collision with food
-				if (snake[0].X == foodX && snake[0].Y == foodY)
-				{
-					score++;
-					AppName = "SNAKE! Score: " + score;
-					RandomizeFood();
+				CheckCollision();
+			}
+		}
 
-					snake.Add(new SnakeSegment(snake[snake.Count - 1].X, snake[snake.Count - 1].Y));
-				}
+		// Check for snake's collision
+		private void CheckCollision()
+		{
+			// Check collision with food
+			if (snake[0].X == foodX && snake[0].Y == foodY)
+			{
+				score++;
+				AppName = "SNAKE! Score: " + score;
+				RandomizeFood();
 
-				// Check wall collision
-				if (snake[0].X < -1 || snake[0].X >= ScreenWidth + 1 || snake[0].Y < -1 || snake[0].Y >= ScreenHeight + 1)
-					dead = true;
-
-				// Check self collision
-				for (int i = 1; i < snake.Count; i++)
-				{
-					if (snake[i].X == snake[0].X && snake[i].Y == snake[0].Y)
-						dead = true;
-				}
+				snake.Add(new SnakeSegment(snake[snake.Count - 1].X, snake[snake.Count - 1].Y));
 			}
 
-			Clear(Pixel.Presets.Black);
+			// Check wall collision
+			if (snake[0].X < -1 || snake[0].X >= ScreenWidth + 1 || snake[0].Y < -1 || snake[0].Y >= ScreenHeight + 1)
+				dead = true;
 
-			DrawRect(new Point(0, 0), ScreenWidth - 1, ScreenHeight - 1, Pixel.Presets.Grey);
-
-			// Render snake
+			// Check self collision
 			for (int i = 1; i < snake.Count; i++)
-				Draw(snake[i].X, snake[i].Y, dead ? Pixel.Presets.Blue : Pixel.Presets.Yellow);
+			{
+				if (snake[i].X == snake[0].X && snake[i].Y == snake[0].Y)
+					dead = true;
+			}
+		}
 
-			// Draw snake head
-			Draw(snake[0].X, snake[0].Y, dead ? Pixel.Presets.Green : Pixel.Presets.Magenta);
-
-			// Draw food
-			Draw(foodX, foodY, Pixel.Presets.Red);
+		// Check if the game is started
+		private void CheckStart()
+		{
+			if (!started)
+			{
+				// If not started then set title
+				AppName = "SNAKE! Press 'Enter' To Start";
+				// Check if game has to be started
+				if (GetKey(Key.Enter).Pressed)
+				{
+					Reset();
+					started = true;
+				}
+			}
 		}
 
 		// Set random location for food
 		private void RandomizeFood()
 		{
 			// Loop while the food is not on empty cell
-			while (DrawTarget[foodX, foodY] != Pixel.Presets.Black)
+			while (GetScreenPixel(foodX, foodY) != Pixel.Presets.Black)
 			{
 				// Set food to random point
-				foodX = rnd.Next(ScreenWidth);
-				foodY = rnd.Next(ScreenHeight);
+				foodX = Random(ScreenWidth);
+				foodY = Random(ScreenHeight);
 			}
 		}
 	}

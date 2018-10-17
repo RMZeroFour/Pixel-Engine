@@ -24,6 +24,7 @@ namespace PixelEngine
 			return false;
 		}
 
+		public void Init() => last = DateTime.Now;
 		public void Init(DateTime time) => last = time;
 	}
 }

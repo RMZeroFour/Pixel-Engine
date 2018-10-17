@@ -10,7 +10,7 @@ namespace PixelEngine
 {
 	public class Sound
 	{
-		public Sound(string file)
+		internal Sound(string file)
 		{
 			using (BinaryReader reader = new BinaryReader(File.OpenRead(file)))
 			{
@@ -47,7 +47,7 @@ namespace PixelEngine
 				};
 				WavHeader.Size = (short)Marshal.SizeOf(WavHeader);
 				
-				if (WavHeader.BitsPerSample != 16 || WavHeader.SamplesPerSec != 44100)
+				if (WavHeader.SamplesPerSec != 44100)
 					return;
 
 				const string Data = "data";
@@ -67,13 +67,33 @@ namespace PixelEngine
 				Samples = new float[SampleCount * Channels];
 
 				int index = 0;
-				for (long i = 0; i < SampleCount; i++)
+				for (long l = 0; l < SampleCount; l++)
 				{
 					for (int c = 0; c < Channels; c++)
 					{
-						short s = reader.ReadInt16();
-						Samples[index] = (float)s / short.MaxValue;
-						index++;
+						// Divide by 8 to convert to bits to bytes 
+						// as sizeof returns bytes
+
+						switch (WavHeader.BitsPerSample / 8)
+						{
+							case sizeof(byte): // 8-bits
+								byte b = reader.ReadByte();
+								Samples[index] = (float)b / byte.MaxValue;
+								index++;
+								break;
+
+							case sizeof(short): // 16-bits
+								short s = reader.ReadInt16();
+								Samples[index] = (float)s / short.MaxValue;
+								index++;
+								break;
+
+							case sizeof(int): // 32-bits
+								int i = reader.ReadInt32();
+								Samples[index] = (float)i / int.MaxValue;
+								index++;
+								break;
+						}
 					}
 				}
 			}
@@ -105,8 +125,12 @@ namespace PixelEngine
 
 		public bool Active { get; private set; }
 
+		internal float Volume = 1;
+
 		private List<Sound> samples;
 		private List<PlayingSample> playingSamples;
+
+		private static WaveDelegate waveProc;
 
 		private uint sampleRate;
 		private uint channels;
@@ -120,6 +144,8 @@ namespace PixelEngine
 		private Thread audioThread;
 		private uint blockFree = 0;
 		private float globalTime = 0.0f;
+
+		private static readonly int soundInterval = 10;
 
 		public Sound LoadSound(string file)
 		{
@@ -140,6 +166,9 @@ namespace PixelEngine
 
 		public void PlaySound(Sound s)
 		{
+			if (s == null)
+				return;
+
 			if (playingSamples == null)
 				playingSamples = new List<PlayingSample>();
 
@@ -156,6 +185,9 @@ namespace PixelEngine
 
 		public void StopSound(Sound s)
 		{
+			if (s == null)
+				return;
+
 			bool Match(PlayingSample p) => !p.Finished && p.AudioSample == s;
 
 			if (playingSamples != null && playingSamples.Exists(Match))
@@ -200,7 +232,9 @@ namespace PixelEngine
 			waveFormat.AvgBytesPerSec = waveFormat.SamplesPerSec * waveFormat.BlockAlign;
 			waveFormat.Size = (short)Marshal.SizeOf(waveFormat);
 
-			if (WaveOutOpen(out device, WaveMapper, waveFormat, WaveOutProc, 0, CallbackFunction) != 0)
+			waveProc = WaveOutProc;
+
+			if (WaveOutOpen(out device, WaveMapper, waveFormat, waveProc, 0, CallbackFunction) != 0)
 				DestroyAudio();
 
 			blockMemory = new short[blockCount * blockSamples];
@@ -227,28 +261,35 @@ namespace PixelEngine
 		{
 			float mixerSample = 0.0f;
 
-			if (playingSamples != null)
+			if (Volume > 0)
 			{
-				for (int i = 0; i < playingSamples.Count; i++)
+				if (playingSamples != null)
 				{
-					PlayingSample ps = playingSamples[i];
+					for (int i = 0; i < playingSamples.Count; i++)
+					{
+						PlayingSample ps = playingSamples[i];
 
-					ps.SamplePosition += (long)(ps.AudioSample.WavHeader.SamplesPerSec * timeStep);
+						ps.SamplePosition += (long)(ps.AudioSample.WavHeader.SamplesPerSec * timeStep);
 
-					if (ps.SamplePosition < ps.AudioSample.SampleCount)
-						mixerSample += ps.AudioSample.Samples[(ps.SamplePosition * ps.AudioSample.Channels) + channel];
-					else
-						ps.Finished = true;
+						if (ps.SamplePosition < ps.AudioSample.SampleCount)
+							mixerSample += ps.AudioSample.Samples[(ps.SamplePosition * ps.AudioSample.Channels) + channel];
+						else if (ps.Loop)
+							ps.SamplePosition = 0;
+						else
+							ps.Finished = true;
 
-					playingSamples[i] = ps;
+						playingSamples[i] = ps;
+					}
+
+					playingSamples.RemoveAll(s => s.Finished);
 				}
 
-				playingSamples.RemoveAll(s => s.Finished);
 			}
 
 			mixerSample += OnSoundCreate(channel, globalTime, timeStep);
+			mixerSample = OnSoundFilter(channel, globalTime, mixerSample);
 
-			return OnSoundFilter(channel, globalTime, mixerSample);
+			return mixerSample * Volume;
 		}
 
 		private void AudioThread()
@@ -267,10 +308,11 @@ namespace PixelEngine
 			float timeStep = 1.0f / sampleRate;
 
 			float maxSample = (float)(Math.Pow(2, (sizeof(short) * 8) - 1) - 1);
-			short prevSample = 0;
 
 			while (Active)
 			{
+				Thread.Sleep(soundInterval);
+
 				while (blockFree == 0) ;
 
 				blockFree--;
@@ -283,11 +325,10 @@ namespace PixelEngine
 
 				for (uint n = 0; n < blockSamples; n += channels)
 				{
-					for (uint c = 0; c < channels; c++)
+					for (int c = 0; c < channels; c++)
 					{
-						newSample = (short)(Clip(GetMixerOutput((int)c, globalTime, timeStep), 1.0f) * maxSample);
+						newSample = (short)(Clip(GetMixerOutput(c, globalTime, timeStep), 1.0f) * maxSample);
 						blockMemory[currentBlock + n + c] = newSample;
-						prevSample = newSample;
 					}
 
 					globalTime += timeStep;
