@@ -388,8 +388,8 @@ namespace PixelEngine
 		protected float Lerp(float start, float end, float amt) => Map(Constrain(amt, 0, 1), 0, 1, start, end);
 		protected float Distance(float x1, float y1, float x2, float y2) => Power(Power(x2 - x1, 2) + Power(y2 - y1, 2), 1 / 2);
 
-		protected void Seed() => Randoms.Seed((int)((DateTime.Now - StartTime).Ticks % int.MaxValue));
-		protected void Seed(int s) => Randoms.Seed(s);
+		protected void Seed() => Randoms.Seed = (int)((DateTime.Now - StartTime).Ticks % int.MaxValue);
+		protected void Seed(int s) => Randoms.Seed = s;
 		protected int Random(int max) => Random(0, max);
 		protected int Random(int min, int max) => Randoms.RandomInt(min, max);
 		protected float Random() => Random(0f, 1f);

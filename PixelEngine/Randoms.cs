@@ -5,8 +5,11 @@ namespace PixelEngine
 	internal static class Randoms
 	{
 		private static Random rnd = new Random();
+		private static int seed;
 
-		public static void Seed(int seed) => rnd = new Random(seed);
+		public static int Seed { get => seed; set { seed = value; rnd = new Random(value); } }
+
+		static Randoms() => Seed = Environment.TickCount;
 
 		public static byte RandomByte(int count) => RandomBytes(1)[0];
 

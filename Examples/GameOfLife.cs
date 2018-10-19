@@ -11,7 +11,7 @@ namespace Examples
 		private bool[,] newGrid;
 
 		// Is the game running or paused?
-		private bool running = true;
+		private bool running = false;
 
 		// Color of alive pixels
 		private Pixel alive = Pixel.Presets.White;
@@ -39,14 +39,25 @@ namespace Examples
 
 		public override void OnCreate()
 		{
-			// Init the grids
+			// Init the grids 
 			// We need two buffers so that cells don't change due to looping in a fixed order
 			grid = new bool[ScreenWidth, ScreenHeight];
 			newGrid = new bool[ScreenWidth, ScreenHeight];
 
-			// Make two gosper guns
-			MakeGosperGun(10, 25);
-			MakeGosperGun(50, 25);
+			Set(15, 48, "#################################################################");
+			Set(15, 49, "#...............................................................#");
+			Set(15, 50, "#..####......................####.........#...................#.#");
+			Set(15, 51, "#.#.......###..#####.####...#....#.####...#....###.####.####..#.#");
+			Set(15, 52, "#.#...##.#...#.#.#.#.#......#....#.#......#.....#..#....#.....#.#");
+			Set(15, 53, "#.#....#.#####.#.#.#.####...#....#.####...#.....#..####.####..#.#");
+			Set(15, 54, "#.#....#.#...#.#.#.#.#......#....#.#......#.....#..#....#.......#");
+			Set(15, 55, "#..####..#...#.#.#.#.####....####..#......####.###.#....####..#.#");
+			Set(15, 56, "#...............................................................#");
+			Set(15, 57, "#################################################################");
+
+			//// Make two gosper guns
+			//MakeGosperGun(10, 25);
+			//MakeGosperGun(50, 25);
 		}
 
 		// Utility to make a gosper glider gun
