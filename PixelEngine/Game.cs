@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
-
 using static PixelEngine.Windows;
 
 namespace PixelEngine
@@ -80,7 +79,7 @@ namespace PixelEngine
 		private readonly bool[] newMouse = new bool[3];
 		private readonly bool[] oldMouse = new bool[3];
 		#endregion
-
+		
 		#region Working
 		public void Start()
 		{

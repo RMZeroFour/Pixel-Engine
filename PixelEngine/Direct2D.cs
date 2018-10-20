@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-
 using Microsoft.WindowsAPICodePack.DirectX.Direct2D1;
 using Microsoft.WindowsAPICodePack.DirectX.DirectWrite;
+using Microsoft.WindowsAPICodePack.DirectX.WindowsImagingComponent;
 using DX = Microsoft.WindowsAPICodePack.DirectX;
 
 namespace PixelEngine
@@ -13,6 +13,8 @@ namespace PixelEngine
 		private int pixHeight;
 
 		private Rect rc;
+
+		private Dictionary<Pixel, Brush> presetBrushes;
 
 		private D2DFactory factory;
 		private HwndRenderTarget target;
@@ -31,11 +33,20 @@ namespace PixelEngine
 
 			factory = D2DFactory.CreateFactory(D2DFactoryType.Multithreaded);
 
-			RenderTargetProperties props = new RenderTargetProperties();
-			HwndRenderTargetProperties hProps = new HwndRenderTargetProperties(display.Handle,
-				new SizeU((uint)(rc.Right - rc.Left), (uint)(rc.Bottom - rc.Top)), PresentOptions.Immediately);
+			SizeU size = new SizeU((uint)(rc.Right - rc.Left), (uint)(rc.Bottom - rc.Top));
 
-			target = factory.CreateHwndRenderTarget(props, hProps);
+			RenderTargetProperties props = new RenderTargetProperties() { RenderTargetType = RenderTargetType.Hardware };
+			HwndRenderTargetProperties hwndProps = new HwndRenderTargetProperties(display.Handle, size, PresentOptions.Immediately);
+
+			target = factory.CreateHwndRenderTarget(props, hwndProps);
+
+			presetBrushes = new Dictionary<Pixel, Brush>();
+			Pixel.Presets[] pixels = (Pixel.Presets[])Enum.GetValues(typeof(Pixel.Presets));
+			foreach (Pixel.Presets p in pixels)
+			{
+				Brush b = target.CreateSolidColorBrush(Convert(p));
+				presetBrushes.Add(p, b);
+			}
 		}
 
 		public void Begin() => target.BeginDraw();
@@ -46,14 +57,21 @@ namespace PixelEngine
 			int top = rc.Top + y * pixHeight;
 			int bottom = top + pixHeight;
 			RectF pix = new RectF(left, top, right, bottom);
-			
-			Brush b = target.CreateSolidColorBrush(Convert(col));
-			target.FillRectangle(pix, b);
-			
-			b.Dispose();
+
+			if (presetBrushes.ContainsKey(col))
+			{
+				Brush b = presetBrushes[col];
+				target.FillRectangle(pix, b);
+			}
+			else
+			{
+				Brush b = target.CreateSolidColorBrush(Convert(col));
+				target.FillRectangle(pix, b);
+				b.Dispose();
+			}
 		}
 		public void End() => target.TryEndDraw(out Tags _, out DX.ErrorCode _);
-
+	
 		#region Helpers
 		private static ColorF Convert(Pixel p) => new ColorF(p.R / 255f, p.G / 255f, p.B / 255f, p.A / 255f);
 		#endregion
@@ -67,6 +85,9 @@ namespace PixelEngine
 			{
 				if (disposing)
 				{
+					foreach (KeyValuePair<Pixel, Brush> pair in presetBrushes)
+						pair.Value.Dispose();
+
 					target.Dispose();
 					factory.Dispose();
 				}

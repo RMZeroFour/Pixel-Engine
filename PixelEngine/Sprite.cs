@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 
 namespace PixelEngine
@@ -56,6 +57,13 @@ namespace PixelEngine
 				bmp.Save(path);
 			}
 		}
+		public static void Copy(Sprite src, Sprite dest)
+		{
+			if (src.colorData.Length != dest.colorData.Length)
+				return;
+
+			src.colorData.CopyTo(dest.colorData, 0);
+		}
 
 		public int Width { get; private set; }
 		public int Height { get; private set; }
@@ -78,15 +86,8 @@ namespace PixelEngine
 			if (x >= 0 && x < Width && y >= 0 && y < Height)
 				colorData[y * Width + x] = p;
 		}
-		private Pixel Sample(float x, float y)
-		{
-			int sx = (int)(x * Width);
-			int sy = (int)(y * Height);
-			return GetPixel(sx, sy);
-		}
-
+		
 		internal Pixel[] GetData() => colorData;
-
 		private Pixel[] colorData = null;
 	}
 }

@@ -24,6 +24,7 @@ namespace PixelEngine
 				['.'] = Pixel.Presets.Grey
 			};
 
+		public Pattern(int w, int h, string pattern) : this(w, h, pattern, DefaultPallete) { }
 		public Pattern(int w, int h, string pattern, Dictionary<char, Pixel> pallete)
 		{
 			spr = new Sprite(w, h);
