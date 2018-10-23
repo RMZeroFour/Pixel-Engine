@@ -521,6 +521,7 @@ namespace PixelEngine
 		public static extern void PostQuitMessage(int exitCode);
 
 		[DllImport(User, SetLastError = true, CharSet = CharSet.Auto)]
+		[return: MarshalAs(UnmanagedType.I1)]
 		public static extern bool SetWindowText(IntPtr hwnd, string text);
 
 		[DllImport(User, SetLastError = true)]
@@ -534,6 +535,7 @@ namespace PixelEngine
 			uint dwStyle, int x, int y, int width, int height, IntPtr hWndParent, IntPtr hMenu, IntPtr hInstance, IntPtr lpParam);
 
 		[DllImport(User)]
+		[return: MarshalAs(UnmanagedType.I1)]
 		public static extern bool GetClientRect(IntPtr hWnd, out Rect lpRect);
 
 		[DllImport(User)]
@@ -543,36 +545,42 @@ namespace PixelEngine
 		public static extern IntPtr GetModuleHandle(string lpModuleName);
 
 		[DllImport(User, SetLastError = true, CharSet = CharSet.Auto)]
+		[return: MarshalAs(UnmanagedType.I1)]
 		public static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
 		[DllImport(User, SetLastError = true)]
 		public static extern int RegisterClassEx(ref WindowClassEx wcex);
 
 		[DllImport(User)]
+		[return: MarshalAs(UnmanagedType.I1)]
 		public static extern bool AdjustWindowRectEx(ref Rect lpRect, uint dwStyle, bool bMenu, uint dwExStyle);
 
 		[DllImport(User, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.I1)]
 		public static extern bool DestroyWindow(IntPtr hWnd);
 
 		[DllImport(User)]
 		public static extern int GetMessage(out Message msg, IntPtr hwnd, uint maxFilter, uint minFilter);
 
 		[DllImport(User)]
+		[return: MarshalAs(UnmanagedType.I1)]
 		public static extern bool TranslateMessage(ref Message msg);
 
-		[DllImport(User)]
+		[DllImport(User)]	
 		public static extern IntPtr DispatchMessage(ref Message lpmsg);
 
 		[DllImport(User)]
 		public static extern IntPtr LoadIcon(IntPtr hInstance, IntPtr lpIconName);
 
 		[DllImport(User, CharSet = CharSet.Auto)]
+		[return: MarshalAs(UnmanagedType.I1)]
 		public static extern bool GetMonitorInfo(IntPtr hMonitor, ref MonitorInfo lpmi);
 
 		[DllImport(User)]
 		public static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
 
 		[DllImport(User, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.I1)]
 		public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
 		[DllImport(User)]

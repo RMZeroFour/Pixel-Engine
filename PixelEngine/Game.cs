@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -93,11 +94,15 @@ namespace PixelEngine
 
 			MessagePump();
 		}
-		public void Construct(int width = 100, int height = 100, int pixWidth = 5, int pixHeight = 5, int frameRate = 60)
+		public void Construct(int width = 100, int height = 100, int pixWidth = 5, int pixHeight = 5, int frameRate = -1)
 		{
 			base.Construct(width, height, pixWidth, pixHeight);
-			FrameRate = frameRate;
-			frameTimer = new Timer(1000.0f / FrameRate);
+
+			if (frameRate != -1)
+			{
+				FrameRate = frameRate;
+				frameTimer = new Timer(1000.0f / FrameRate);
+			}
 
 			ConstructFontSheet();
 			HandleDrawTarget();
@@ -155,9 +160,11 @@ namespace PixelEngine
 
 			OnCreate();
 
-			DateTime t1 = DateTime.Now;
-			DateTime t2 = DateTime.Now;
-			frameTimer.Init(t1);
+			DateTime t1, t2;
+			t1 = t2 = DateTime.Now;
+
+			if (frameTimer != null)
+				frameTimer.Init(t1);
 
 			while (active)
 			{
@@ -167,7 +174,7 @@ namespace PixelEngine
 					TimeSpan elapsed = t2 - t1;
 					t1 = t2;
 
-					if (!frameTimer.Tick())
+					if (frameTimer != null && !frameTimer.Tick())
 						continue;
 
 					if (delaying)
@@ -394,6 +401,9 @@ namespace PixelEngine
 		protected float Random() => Random(0f, 1f);
 		protected float Random(float max) => Random(0, max);
 		protected float Random(float min, float max) => Randoms.RandomFloat(min, max);
+		protected T Random<T>(params T[] list) => list[Random(list.Length)];
+		protected T Random<T>(List<T> list) => list[Random(list.Count)];
+		protected T Random<T>(IEnumerable<T> list) => Random(list.ToArray());
 
 		protected float Degrees(float radians) => (float)(radians * 180 / Math.PI);
 		protected float Radians(float degrees) => (float)(degrees * Math.PI / 180);

@@ -9,6 +9,8 @@ namespace PixelEngine
 {
 	public class Direct2D : IDisposable
 	{
+		private const float PixMult = 1f / byte.MaxValue;
+
 		private int pixWidth;
 		private int pixHeight;
 
@@ -71,10 +73,8 @@ namespace PixelEngine
 			}
 		}
 		public void End() => target.TryEndDraw(out Tags _, out DX.ErrorCode _);
-	
-		#region Helpers
-		private static ColorF Convert(Pixel p) => new ColorF(p.R / 255f, p.G / 255f, p.B / 255f, p.A / 255f);
-		#endregion
+
+		private static ColorF Convert(Pixel p) => new ColorF(p.R * PixMult, p.G * PixMult, p.B * PixMult, p.A * PixMult);
 
 		#region IDisposable Support
 		private bool disposedValue = false;

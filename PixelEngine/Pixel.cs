@@ -9,6 +9,8 @@ namespace PixelEngine
 		public byte B { get; private set; }
 		public byte A { get; private set; }
 
+		public static Pixel[] PresetPixels => (Pixel[])presetPix.Clone();
+
 		public Pixel(byte red, byte green, byte blue, byte alpha = 255)
 		{
 			R = red;
@@ -33,6 +35,14 @@ namespace PixelEngine
 		{
 			byte[] vals = Randoms.RandomBytes(4);
 			return new Pixel(vals[0], vals[1], vals[2], vals[3]);
+		}
+
+		static Pixel()
+		{
+			Presets[] presets = (Presets[])Enum.GetValues(typeof(Presets));
+			presetPix = new Pixel[presets.Length];
+			for (int i = 0; i < presetPix.Length; i++)
+				presetPix[i] = presets[i];
 		}
 
 		#region Presets
@@ -60,12 +70,14 @@ namespace PixelEngine
 			Apricot = 0xffd8b1,
 			Navy = 0x000075,
 			Black = 0x000000,
-		} 
+		}
 
 		public static readonly Pixel Empty = new Pixel(0, 0, 0, 0);
+
+		private static Pixel[] presetPix;
 		#endregion
 
-		public static bool operator ==(Pixel a, Pixel b) => (a.A == b.A) && (a.R == b.R) && (a.G == b.G) && (a.B == b.B);
+		public static bool operator ==(Pixel a, Pixel b) => (a.R == b.R) && (a.G == b.G) && (a.B == b.B) && (a.A == b.A);
 		public static bool operator !=(Pixel a, Pixel b) => !(a == b);
 
 		public static implicit operator Pixel(Presets p)
@@ -87,11 +99,11 @@ namespace PixelEngine
 		}
 		public override int GetHashCode()
 		{
-			int hashCode = 1960784236;
-			hashCode = hashCode * -1521134295 + R.GetHashCode();
-			hashCode = hashCode * -1521134295 + G.GetHashCode();
-			hashCode = hashCode * -1521134295 + B.GetHashCode();
-			hashCode = hashCode * -1521134295 + A.GetHashCode();
+			int hashCode = 196078;
+			hashCode = hashCode * -152113 + R.GetHashCode();
+			hashCode = hashCode * -152113 + G.GetHashCode();
+			hashCode = hashCode * -152113 + B.GetHashCode();
+			hashCode = hashCode * -152113 + A.GetHashCode();
 			return hashCode;
 		}
 	}
