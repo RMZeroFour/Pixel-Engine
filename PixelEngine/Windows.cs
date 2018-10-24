@@ -32,6 +32,8 @@ namespace PixelEngine
 
 		private const string User = "user32.dll";
 		private const string Kernel = "kernel32.dll";
+		private const string OpenGl = "opengl32.dll";
+		private const string Gdi = "gdi32.dll";
 		private const string Winmm = "winmm.dll";
 		#endregion
 
@@ -77,6 +79,15 @@ namespace PixelEngine
 			DLGPROC = 0x4
 		}
 
+		public enum PFD
+		{
+			TypeRGBA = 0,
+			MainPlane = 0,
+			DoubleBuffer = 1,
+			DrawToWindow = 4,
+			SupportOpenGL = 32
+		}
+
 		[Flags]
 		public enum WindowStylesEx : uint
 		{
@@ -87,7 +98,6 @@ namespace PixelEngine
 		[Flags]
 		public enum SWP : uint
 		{
-
 			FrameChanged = 0x0020,
 			HideWindow = 0x0080,
 			NoActivate = 0x0010,
@@ -100,6 +110,22 @@ namespace PixelEngine
 			NoSize = 0x0001,
 			NoZOrder = 0x0004,
 			ShowWindow = 0x0040,
+		}
+
+		public enum GL
+		{
+			Texture2D = 0x0DE1,
+			TextureMagFilter = 0x2800,
+			TextureMinFilter = 0x2801,
+			Nearest = 0x2600,
+			TextureEnv = 0x2300,
+			TextureEnvMode = 0x2200,
+			Decal = 0x2101,
+			RGBA = 0x1908,
+			UnsignedByte = 0x1401,
+			Quads = 0x0007,
+			ModelView = 0x1700,
+			Projection = 0x1701
 		}
 
 		public enum WM
@@ -517,6 +543,8 @@ namespace PixelEngine
 		#endregion
 
 		#region Methods
+
+		#region User
 		[DllImport(User)]
 		public static extern void PostQuitMessage(int exitCode);
 
@@ -541,9 +569,6 @@ namespace PixelEngine
 		[DllImport(User)]
 		public static extern IntPtr LoadCursorA(IntPtr handle, IntPtr cursor);
 
-		[DllImport(Kernel, CharSet = CharSet.Auto)]
-		public static extern IntPtr GetModuleHandle(string lpModuleName);
-
 		[DllImport(User, SetLastError = true, CharSet = CharSet.Auto)]
 		[return: MarshalAs(UnmanagedType.I1)]
 		public static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
@@ -566,7 +591,7 @@ namespace PixelEngine
 		[return: MarshalAs(UnmanagedType.I1)]
 		public static extern bool TranslateMessage(ref Message msg);
 
-		[DllImport(User)]	
+		[DllImport(User)]
 		public static extern IntPtr DispatchMessage(ref Message lpmsg);
 
 		[DllImport(User)]
@@ -585,7 +610,20 @@ namespace PixelEngine
 
 		[DllImport(User)]
 		public static extern IntPtr DefWindowProc(IntPtr handle, uint msg, int min, int max);
-	
+
+		[DllImport(User, SetLastError = true)]
+		public static extern IntPtr GetDC(IntPtr hWnd);
+
+		[DllImport(User, SetLastError = true)]
+		public static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
+		#endregion
+
+		#region Kernel
+		[DllImport(Kernel, CharSet = CharSet.Auto)]
+		public static extern IntPtr GetModuleHandle(string lpModuleName);
+		#endregion
+
+		#region Winmm
 		[DllImport(Winmm, EntryPoint = "mciSendString")]
 		public static extern int MciSendString(string command, StringBuilder buffer, int bufferSize, IntPtr hwndCallback);
 
@@ -624,6 +662,69 @@ namespace PixelEngine
 
 		[DllImport(Winmm, EntryPoint = "waveOutGetVolume")]
 		public static extern int WaveOutGetVolume(IntPtr hWaveOut, out int dwVolume);
+		#endregion
+
+		#region OpenGL
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "wglCreateContext")]
+		public static extern IntPtr WglCreateContext(IntPtr hdc);
+
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "wglDeleteContext")]
+		public static extern IntPtr WglDeleteContext(IntPtr hdc);
+
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "wglMakeCurrent")]
+		public static extern int WglMakeCurrent(IntPtr hdc, IntPtr hrc);
+
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glEnable")]
+		public static extern void GlEnable(uint cap);
+
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glGenTextures")]
+		public static extern void GlGenTextures(int n, [MarshalAs(UnmanagedType.LPArray)] uint[] textures);
+
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glBindTexture")]
+		public static extern void GlBindTexture(uint target, uint texture);
+
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glTexParameteri")]
+		public static extern void GlTexParameteri(uint target, uint pname, int param);
+
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glTexEnvf")]
+		public static extern void GlTexEnvf(uint target, uint pname, float param);
+
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glTexImage2D")]
+		public static unsafe extern void GlTexImage2D(uint target, int level, uint internalformat, int width, int height, int border, uint format, uint type, Pixel* pixels);
+
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glTexSubImage2D")]
+		public static unsafe extern void GlTexSubImage2D(uint target, int level, int xoffset, int yoffset, int width, int height, uint format, uint type, Pixel* pixels);
+
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glBegin")]
+		public static extern void GlBegin(uint mode);
+
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glEnd")]
+		public static extern void GlEnd();
+
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glTexCoord2f")]
+		public static extern void GlTexCoord2f(float s, float t);
+
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glVertex3f")]
+		public static extern void GlVertex3f(float x, float y, float z);
+
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glVertex2f")]
+		public static extern void GlVertex2f(float x, float y);
+
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glColor4f")]
+		public static extern void GlColor4f(float red, float green, float blue, float alpha);
+		#endregion
+
+		#region Gdi
+		[DllImport(Gdi, SetLastError = true)]
+		public unsafe static extern int ChoosePixelFormat(IntPtr hDC, [In] ref PixelFormatDesc ppfd);
+
+		[DllImport(Gdi, SetLastError = true)]
+		public unsafe static extern int SetPixelFormat(IntPtr hDC, int iPixelFormat, [In] ref PixelFormatDesc ppfd);
+
+		[DllImport(Gdi, SetLastError = true)]
+		public static extern int SwapBuffers(IntPtr hDC);
+		#endregion
+
 		#endregion
 
 		#region Structs
@@ -707,6 +808,97 @@ namespace PixelEngine
 			[MarshalAs(UnmanagedType.LPStr)]
 			public string ClassName;
 			public IntPtr IconSm;
+		}
+
+		[StructLayout(LayoutKind.Explicit)]
+		public struct PixelFormatDesc
+		{
+			[FieldOffset(0)]
+			public ushort Size;
+			[FieldOffset(2)]
+			public ushort Version;
+			[FieldOffset(4)]
+			public uint Flags;
+			[FieldOffset(8)]
+			public byte PixelType;
+			[FieldOffset(9)]
+			public byte ColorBits;
+			[FieldOffset(10)]
+			public byte RedBits;
+			[FieldOffset(11)]
+			public byte RedShift;
+			[FieldOffset(12)]
+			public byte GreenBits;
+			[FieldOffset(13)]
+			public byte GreenShift;
+			[FieldOffset(14)]
+			public byte BlueBits;
+			[FieldOffset(15)]
+			public byte BlueShift;
+			[FieldOffset(16)]
+			public byte AlphaBits;
+			[FieldOffset(17)]
+			public byte AlphaShift;
+			[FieldOffset(18)]
+			public byte AccumBits;
+			[FieldOffset(19)]
+			public byte AccumRedBits;
+			[FieldOffset(20)]
+			public byte AccumGreenBits;
+			[FieldOffset(21)]
+			public byte AccumBlueBits;
+			[FieldOffset(22)]
+			public byte AccumAlphaBits;
+			[FieldOffset(23)]
+			public byte DepthBits;
+			[FieldOffset(24)]
+			public byte StencilBits;
+			[FieldOffset(25)]
+			public byte AuxBuffers;
+			[FieldOffset(26)]
+			public sbyte LayerType;
+			[FieldOffset(27)]
+			public byte Reserved;
+			[FieldOffset(28)]
+			public uint LayerMask;
+			[FieldOffset(32)]
+			public uint VisibleMask;
+			[FieldOffset(36)]
+			public uint DamageMask;
+
+			public PixelFormatDesc(ushort version, uint flags, byte pixelType, byte colorBits,
+				byte redBits, byte redShift, byte greenBits, byte greenShift, byte blueBits, byte blueShift, byte alphaBits, byte alphaShift,
+				byte accumBits, byte accumRedBits, byte accumGreenBits, byte accumBlueBits, byte accumAlphaBits,
+				byte depthBits, byte stencilBits, byte auxBuffers, sbyte layerType, byte reserved,
+				uint layerMask, uint visibleMask, uint damageMask) : this()
+			{
+				Size = (ushort)Marshal.SizeOf(this);
+				Version = version;
+				Flags = flags;
+				PixelType = pixelType;
+				ColorBits = colorBits;
+				RedBits = redBits;
+				RedShift = redShift;
+				GreenBits = greenBits;
+				GreenShift = greenShift;
+				BlueBits = blueBits;
+				BlueShift = blueShift;
+				AlphaBits = alphaBits;
+				AlphaShift = alphaShift;
+				AccumBits = accumBits;
+				AccumRedBits = accumRedBits;
+				AccumGreenBits = accumGreenBits;
+				AccumBlueBits = accumBlueBits;
+				AccumAlphaBits = accumAlphaBits;
+				DepthBits = depthBits;
+				StencilBits = stencilBits;
+				AuxBuffers = auxBuffers;
+				LayerType = layerType;
+				Reserved = reserved;
+				LayerMask = layerMask;
+				VisibleMask = visibleMask;
+				DamageMask = damageMask;
+			}
 		}
 		#endregion
 	}

@@ -52,7 +52,7 @@ namespace PixelEngine
 		private Thread gameLoop;
 
 		private AudioEngine audio;
-		private Direct2D canvas;
+		private OpenGL canvas;
 
 		private float pixBlend = 1;
 
@@ -135,8 +135,6 @@ namespace PixelEngine
 			ScreenHeight = windowHeight / PixHeight;
 
 			HandleDrawTarget();
-
-			canvas.Init(this);
 		}
 		public void EnableSound()
 		{
@@ -153,12 +151,13 @@ namespace PixelEngine
 		}
 		private void GameLoop()
 		{
-			canvas = new Direct2D();
-			canvas.Init(this);
-
 			StartTime = DateTime.Now;
 
 			OnCreate();
+
+			canvas = new OpenGL();
+			canvas.Create(this);
+			canvas.Initialize(defDrawTarget);
 
 			DateTime t1, t2;
 			t1 = t2 = DateTime.Now;
@@ -171,7 +170,7 @@ namespace PixelEngine
 				while (active)
 				{
 					t2 = DateTime.Now;
-					TimeSpan elapsed = t2 - t1;
+					float elapsed = (t2 - t1).Ticks;
 					t1 = t2;
 
 					if (frameTimer != null && !frameTimer.Tick())
@@ -179,7 +178,7 @@ namespace PixelEngine
 
 					if (delaying)
 					{
-						delayTime -= elapsed.Milliseconds;
+						delayTime -= elapsed;
 
 						if (delayTime <= 0)
 						{
@@ -202,7 +201,7 @@ namespace PixelEngine
 
 					FrameCount++;
 
-					RenderImage();
+					canvas.Draw(defDrawTarget);
 				}
 
 				OnDestroy();
@@ -211,26 +210,9 @@ namespace PixelEngine
 			if (audio != null)
 				audio.DestroyAudio();
 
-			canvas.Dispose();
+			canvas.Destroy();
 
 			PostMessage(Handle, (uint)WM.DESTROY, IntPtr.Zero, IntPtr.Zero);
-		}
-		private void RenderImage()
-		{
-			canvas.Begin();
-			for (int x = 0; x < drawTarget.Width; x++)
-			{
-				for (int y = 0; y < drawTarget.Height; y++)
-				{
-					if (drawTarget[x, y] == prev[y * drawTarget.Width + x])
-						continue;
-
-					Pixel p = drawTarget[x, y];
-					canvas.Draw(x, y, p);
-					prev[y * drawTarget.Width + x] = p;
-				}
-			}
-			canvas.End();
 		}
 		private void HandleMouse()
 		{
@@ -362,11 +344,11 @@ namespace PixelEngine
 		#endregion
 
 		#region Helpers
-		protected void Delay(TimeSpan time)
+		protected void Delay(float time)
 		{
 			if (!delaying)
 				delaying = true;
-			delayTime += (float)time.TotalMilliseconds;
+			delayTime += time;
 		}
 
 		protected void Continue() => active = true;
@@ -459,12 +441,10 @@ namespace PixelEngine
 		}
 		private protected override void CreateWindow()
 		{
-			// Define window furniture
 			uint styleEx = (uint)(WindowStylesEx.AppWindow | WindowStylesEx.WindowEdge);
 			uint style = (uint)(WindowStyles.Caption | WindowStyles.SysMenu | WindowStyles.Visible);
 			Rect winRect = new Rect() { Left = 0, Top = 0, Right = windowWidth, Bottom = windowHeight };
 
-			// Keep client size as requested
 			AdjustWindowRectEx(ref winRect, style, false, styleEx);
 
 			int width = winRect.Right - winRect.Left;
@@ -473,7 +453,8 @@ namespace PixelEngine
 			if (string.IsNullOrWhiteSpace(AppName))
 				AppName = GetType().Name;
 
-			Handle = CreateWindowEx(0, ClassName, AppName, (uint)(WindowStyles.OverlappedWindow | WindowStyles.Visible),
+			WindowStyles winStyle = WindowStyles.Overlapped | WindowStyles.Visible | WindowStyles.Caption | WindowStyles.SysMenu | WindowStyles.MinimizeBox;
+			Handle = CreateWindowEx(0, ClassName, AppName, (uint)winStyle,
 					0, 0, width, height, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
 
 			GetClientRect(Handle, out Rect r);
@@ -544,7 +525,11 @@ namespace PixelEngine
 			if (drawTarget == null)
 				return;
 
-			void MakePixel(int a, int b, Pixel pix) => drawTarget[a, b] = pix;
+			void MakePixel(int a, int b, Pixel pix)
+			{
+				if (a >= 0 && a < drawTarget.Width && b >= 0 && b < drawTarget.Height)
+					drawTarget[a, b] = pix;
+			}
 
 			switch (PixelMode)
 			{
@@ -971,7 +956,7 @@ namespace PixelEngine
 
 		#region Functionality
 		public virtual void OnCreate() { }
-		public virtual void OnUpdate(TimeSpan elapsed) { }
+		public virtual void OnUpdate(float elapsed) { }
 		public virtual void OnMousePress(Mouse m) { }
 		public virtual void OnMouseRelease(Mouse m) { }
 		public virtual void OnMouseDown(Mouse m) { }

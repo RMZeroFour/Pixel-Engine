@@ -19,11 +19,11 @@ namespace PixelEngine
 		// Display details
 		public int ScreenWidth { get; private protected set; }
 		public int ScreenHeight { get; private protected set; }
-		public int PixWidth { get; private set; }
-		public int PixHeight { get; private set; }
+		public int PixWidth { get; private protected set; }
+		public int PixHeight { get; private protected set; }
 
-		private protected int windowWidth;
-		private protected int windowHeight;
+		internal int windowWidth;
+		internal int windowHeight;
 
 		// Title of the app
 		public virtual string AppName
