@@ -168,7 +168,7 @@ namespace PixelEngine
 				while (active)
 				{
 					t2 = DateTime.Now;
-					float elapsed = (t2 - t1).Ticks;
+					float elapsed = (float)(t2 - t1).TotalMilliseconds;
 					t1 = t2;
 
 					if (frameTimer != null && !frameTimer.Tick())

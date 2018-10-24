@@ -3,14 +3,14 @@ using PixelEngine;
 
 namespace Examples
 {
-	public class Noise : Game
+	public class RandomPixels : Game
 	{
 		static void Main(string[] args)
 		{
 			// Create an instance
-			Noise n = new Noise();
-			n.Construct(); // Construct the game
-			n.Start(); // Start and show a window
+			RandomPixels rp = new RandomPixels();
+			rp.Construct(); // Construct the game
+			rp.Start(); // Start and show a window
 		}
 
 		// Uncomment to make fullscreen
