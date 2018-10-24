@@ -58,8 +58,6 @@ namespace PixelEngine
 
 		private Timer frameTimer;
 
-		private Pixel[] prev;
-
 		private static WindowProcess proc;
 
 		private bool active;
@@ -271,7 +269,6 @@ namespace PixelEngine
 		private void HandleDrawTarget()
 		{
 			defDrawTarget = new Sprite(ScreenWidth, ScreenHeight);
-			prev = new Pixel[defDrawTarget.Width * defDrawTarget.Height];
 			DrawTarget = defDrawTarget;
 		}
 		private protected override IntPtr WndProc(IntPtr handle, uint msg, int wParam, int lParam)
