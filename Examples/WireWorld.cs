@@ -4,9 +4,12 @@ namespace Examples
 {
 	public class WireWorld : Game
 	{
+		// Current cells state
 		private Cell[,] current;
+		// Next cells state
 		private Cell[,] next;
 
+		// Is the game running?
 		private bool running;
 
 		static void Main(string[] args)
@@ -16,6 +19,7 @@ namespace Examples
 			ww.Start();
 		}
 
+		// A cell can be either of these types
 		private enum Cell
 		{
 			Empty,
@@ -26,6 +30,7 @@ namespace Examples
 
 		public override void OnCreate()
 		{
+			// Init the state arrays
 			current = new Cell[ScreenWidth, ScreenHeight];
 			next = new Cell[ScreenWidth, ScreenHeight];
 
@@ -40,13 +45,16 @@ namespace Examples
 
 		public override void OnUpdate(float elapsed)
 		{
+			// Clear and render
 			Clear(Pixel.Presets.Black);
 			DrawCells();
 
+			// Update only if runnig
 			if (running)
 				UpdateCells();
 		}
 
+		// Utility to set cells
 		private void Set(int x, int y, string s)
 		{
 			for (int i = 0; i < s.Length; i++)
@@ -77,6 +85,7 @@ namespace Examples
 
 		private void UpdateCells()
 		{
+			// Get total count of neighbouring cells which are electron heads
 			int GetNeighbourElectronHeads(int x, int y)
 			{
 				int sum = 0;
@@ -113,15 +122,20 @@ namespace Examples
 					switch (current[x, y])
 					{
 						case Cell.Empty:
+							// Empty remain empty
 							next[x, y] = Cell.Empty;
 							break;
 						case Cell.ElectronHead:
+							// Heads become tails
 							next[x, y] = Cell.ElectronTail;
 							break;
 						case Cell.ElectronTail:
+							// Tails becoms conductors
 							next[x, y] = Cell.Conductor;
 							break;
 						case Cell.Conductor:
+							// Conductors become heads only if one or two
+							// neighbours are heads
 							int neighbourHeads = GetNeighbourElectronHeads(x, y);
 							if (neighbourHeads == 1 || neighbourHeads == 2)
 								next[x, y] = Cell.ElectronHead;
@@ -132,6 +146,7 @@ namespace Examples
 				}
 			}
 
+			// Swap state buffers
 			for (int i = 0; i < ScreenWidth; i++)
 				for (int j = 0; j < ScreenHeight; j++)
 					current[i, j] = next[i, j];
@@ -143,6 +158,7 @@ namespace Examples
 			{
 				for (int j = 0; j < ScreenHeight; j++)
 				{
+					// Render according to color
 					Pixel col = current[i, j] == Cell.ElectronHead ? Pixel.Presets.Blue :
 						current[i, j] == Cell.ElectronTail ? Pixel.Presets.Red :
 						current[i, j] == Cell.Conductor ? Pixel.Presets.Yellow : Pixel.Presets.Black;
@@ -155,14 +171,18 @@ namespace Examples
 		{
 			if(!running)
 			{
+				// Place conductors
 				if (m == Mouse.Left)
 					current[MouseX, MouseY] = Cell.Conductor;
+				// Clear cell
 				else if (m == Mouse.Right)
 					current[MouseX, MouseY] = Cell.Empty;
 				if (m == Mouse.Middle)
-				{
+				{	
+					// Middle + Shift => Tail
 					if (GetKey(Key.Shift).Down)
 						current[MouseX, MouseY] = Cell.ElectronTail;
+					// Middle => Head
 					else
 						current[MouseX, MouseY] = Cell.ElectronHead;
 				}
@@ -171,15 +191,18 @@ namespace Examples
 
 		public override void OnKeyPress(Key k)
 		{
+			// Pause game
 			if (k == Key.Enter)
 			{
 				running = !running;
 				AppName = "WireWorld " + (running ? "Running" : "Paused");
 			}
 
+			// Simulate next frame
 			if (k == Key.F)
 				UpdateCells();
-
+			
+			// Reset the field
 			if (k == Key.R)
 			{
 				for (int i = 0; i < ScreenWidth; i++)
