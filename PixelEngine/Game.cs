@@ -60,16 +60,22 @@ namespace PixelEngine
 
 		private static WindowProcess proc;
 
+		private bool hrText;
+
 		private bool active;
 		private bool paused;
 
 		private readonly Dictionary<uint, Key> mapKeys = new Dictionary<uint, Key>();
 
 		private Sprite drawTarget;
+		private Sprite textTarget;
 		private Sprite defDrawTarget;
-		private Sprite fontSprite = null;
+
+		private Sprite fontSprite;
+
 		private bool delaying;
 		private float delayTime;
+
 		private readonly Button[] keyboard = new Button[256];
 		private readonly bool[] newKeyboard = new bool[256];
 		private readonly bool[] oldKeyboard = new bool[256];
@@ -77,8 +83,11 @@ namespace PixelEngine
 		private readonly Button[] mouse = new Button[3];
 		private readonly bool[] newMouse = new bool[3];
 		private readonly bool[] oldMouse = new bool[3];
+
+		private const int CharWidth = 8;
+		private const int CharHeight = 8;
 		#endregion
-		
+
 		#region Working
 		public void Start()
 		{
@@ -151,11 +160,11 @@ namespace PixelEngine
 		{
 			StartTime = DateTime.Now;
 
-			OnCreate();
-
 			canvas = new OpenGL();
 			canvas.Create(this);
-			canvas.Initialize(defDrawTarget);
+			canvas.Initialize(defDrawTarget, textTarget);
+
+			OnCreate();
 
 			DateTime t1, t2;
 			t1 = t2 = DateTime.Now;
@@ -199,7 +208,7 @@ namespace PixelEngine
 
 					FrameCount++;
 
-					canvas.Draw(defDrawTarget);
+					canvas.Draw(defDrawTarget, textTarget);
 				}
 
 				OnDestroy();
@@ -426,8 +435,8 @@ namespace PixelEngine
 
 				for (int i = 0; i < 24; i++)
 				{
-					byte k = (r & (1 << i)) != 0 ? byte.MaxValue : byte.MinValue;
-					fontSprite[px, py] = new Pixel(k, k, k, k);
+					Pixel p = (r & (1 << i)) != 0 ? Pixel.Presets.White : Pixel.Presets.Black;
+					fontSprite[px, py] = p;
 					if (++py == 48)
 					{
 						px++;
@@ -877,8 +886,41 @@ namespace PixelEngine
 				for (int j = 0; j < h; j++)
 					Draw(p.X + i, p.Y + j, spr[i + op.X, j + op.Y]);
 		}
-		public void DrawText(Point p, string text, Pixel col, float size = 1)
+		public void Clear(Pixel p)
 		{
+			Pixel[] pixels = drawTarget.GetData();
+			for (int i = 0; i < pixels.Length; i++)
+				pixels[i] = p;
+
+			if (hrText)
+			{
+				pixels = textTarget.GetData();
+				for (int i = 0; i < pixels.Length; i++)
+					pixels[i] = Pixel.Empty;
+			}
+
+			canvas.Clear();
+		}
+		#endregion
+
+		#region Text
+		public void EnableHrText()
+		{
+			hrText = true;
+			textTarget = new Sprite(windowWidth, windowHeight);
+		}
+
+		public void DrawText(Point p, string text, Pixel col, int scale = 1)
+		{
+			if (string.IsNullOrWhiteSpace(text))
+				return;
+
+			void SetPixel(int a, int b)
+			{
+				if (a >= 0 && a < drawTarget.Width && b >= 0 && b < drawTarget.Height)
+					drawTarget[a, b] = col;
+			}
+
 			Pixel.Mode prev = PixelMode;
 			if (col.A != 255)
 				PixelMode = Pixel.Mode.Alpha;
@@ -892,40 +934,81 @@ namespace PixelEngine
 			{
 				if (c == '\n')
 				{
-					sx = 0; sy += (int)(8 * size);
+					sx = 0;
+					sy += 8 * scale;
 				}
 				else
 				{
 					int ox = (c - 32) % 16;
 					int oy = (c - 32) / 16;
 
-					if (size > 1)
+					if (scale > 1)
 					{
 						for (int i = 0; i < 8; i++)
 							for (int j = 0; j < 8; j++)
 								if (fontSprite[i + ox * 8, j + oy * 8].R > 0)
-									for (int ni = 0; ni < size; ni++)
-										for (int nj = 0; nj < size; nj++)
-											Draw(p.X + sx + (int)(i * size) + ni, p.Y + sy + (int)(j * size) + nj, col);
+									for (int ni = 0; ni < scale; ni++)
+										for (int nj = 0; nj < scale; nj++)
+											SetPixel(p.X + sx + i * scale + ni, p.Y + sy + j * scale + nj);
 					}
 					else
 					{
 						for (int i = 0; i < 8; i++)
 							for (int j = 0; j < 8; j++)
 								if (fontSprite[i + ox * 8, j + oy * 8].R > 0)
-									Draw(p.X + sx + i, p.Y + sy + j, col);
+									SetPixel(p.X + sx + i, p.Y + sy + j);
 					}
-					sx += (int)(8 * size);
+					sx += 8 * scale;
 				}
 			}
 
 			PixelMode = prev;
 		}
-		public void Clear(Pixel p)
+		public void DrawTextHr(Point p, string text, Pixel col, int scale = 1)
 		{
-			Pixel[] pixels = drawTarget.GetData();
-			for (int i = 0; i < pixels.Length; i++)
-				pixels[i] = p;
+			if (!hrText || string.IsNullOrWhiteSpace(text))
+				return;
+
+			void SetPixel(int a, int b)
+			{
+				if (a >= 0 && a < textTarget.Width && b >= 0 && b < textTarget.Height)
+					textTarget[a, b] = col;
+			}
+
+			int sx = 0;
+			int sy = 0;
+
+			foreach (char c in text)
+			{
+				if (c == '\n')
+				{
+					sx = 0;
+					sy += 8 * scale;
+				}
+				else
+				{
+					int ox = (c - 32) % 16;
+					int oy = (c - 32) / 16;
+
+					if (scale > 1)
+					{
+						for (int i = 0; i < 8; i++)
+							for (int j = 0; j < 8; j++)
+								if (fontSprite[i + ox * 8, j + oy * 8].R > 0)
+									for (int ni = 0; ni < scale; ni++)
+										for (int nj = 0; nj < scale; nj++)
+											SetPixel(p.X + sx + i * scale + ni, p.Y + sy + j * scale + nj);
+					}
+					else
+					{
+						for (int i = 0; i < 8; i++)
+							for (int j = 0; j < 8; j++)
+								if (fontSprite[i + ox * 8, j + oy * 8].R > 0)
+									SetPixel(p.X + sx + i, p.Y + sy + j);
+					}
+					sx += 8 * scale;
+				}
+			}
 		}
 		#endregion
 

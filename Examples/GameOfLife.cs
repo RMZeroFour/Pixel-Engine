@@ -74,7 +74,7 @@ namespace Examples
 			Set(x, y + 8, "............##.......................");
 		}
 
-		public override void OnUpdate(TimeSpan elapsed)
+		public override void OnUpdate(float elapsed)
 		{
 			// Clear field
 			Clear(dead);

@@ -124,8 +124,11 @@ namespace PixelEngine
 			RGBA = 0x1908,
 			UnsignedByte = 0x1401,
 			Quads = 0x0007,
+			Points = 0x0000,
 			ModelView = 0x1700,
-			Projection = 0x1701
+			Projection = 0x1701,
+			ColorBufferBit = 0x4000,
+			DepthBufferBit = 0x00000100
 		}
 
 		public enum WM
@@ -701,6 +704,12 @@ namespace PixelEngine
 		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glEnd")]
 		public static extern void GlEnd();
 
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glPushMatrix")]
+		public static extern void GlPushMatrix();
+
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glPopMatrix")]
+		public static extern void GlPopMatrix();
+
 		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glTexCoord2f")]
 		public static extern void GlTexCoord2f(float s, float t);
 
@@ -710,8 +719,23 @@ namespace PixelEngine
 		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glVertex2f")]
 		public static extern void GlVertex2f(float x, float y);
 
-		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glColor4f")]
-		public static extern void GlColor4f(float red, float green, float blue, float alpha);
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glColor3ub")]
+		public static extern void GlColor3ub(byte red, byte green, byte blue);
+
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glColor4ub")]
+		public static extern void GlColor4ub(byte red, byte green, byte blue, byte alpha);
+
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glTranslatef")]
+		public static extern void GlTranslateF(float x, float y, float z);
+
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glClearColor")]
+		public static extern void GlClearColor(float red, float green, float blue, float alpha);
+
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glClear")]
+		public static extern void GlClear(uint mask);
+
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glRectf")]
+		public static extern void GlRectF(float x1, float y1, float x2, float y2);
 		#endregion
 
 		#region Gdi

@@ -54,7 +54,9 @@ namespace Examples
 		public override void OnCreate()
 		{
 			// Uncomment to make the game fullscreen
-			Fullscreen();
+			//Fullscreen();
+
+			EnableHrText();
 
 			Reset();
 		}
@@ -77,7 +79,7 @@ namespace Examples
 			Seed();
 		}
 
-		public override void OnUpdate(TimeSpan elapsed)
+		public override void OnUpdate(float elapsed)
 		{
 			CheckStart();
 			UpdateSnake();
@@ -89,6 +91,11 @@ namespace Examples
 		{
 			// Clear the screen
 			Clear(Pixel.Presets.Black);
+
+			if (started) // Inform the player of their score
+				DrawTextHr(new Point(15, 15), "Score: " + score, Pixel.Presets.Green, 2);
+			else // Inform the player to start by pressing enter
+				DrawTextHr(new Point(15, 15), "Press Enter To Start", Pixel.Presets.Green, 2);
 
 			// Draw the border
 			DrawRect(new Point(0, 0), ScreenWidth - 1, ScreenHeight - 1, Pixel.Presets.Grey);
@@ -160,7 +167,6 @@ namespace Examples
 			if (snake[0].X == foodX && snake[0].Y == foodY)
 			{
 				score++;
-				AppName = "SNAKE! Score: " + score;
 				RandomizeFood();
 
 				snake.Add(new SnakeSegment(snake[snake.Count - 1].X, snake[snake.Count - 1].Y));
@@ -183,8 +189,6 @@ namespace Examples
 		{
 			if (!started)
 			{
-				// If not started then set title
-				AppName = "SNAKE! Press 'Enter' To Start";
 				// Check if game has to be started
 				if (GetKey(Key.Enter).Pressed)
 				{

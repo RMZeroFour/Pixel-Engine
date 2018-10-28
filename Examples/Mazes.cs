@@ -55,7 +55,7 @@ namespace Examples
 			visited = 1;
 		}
 
-		public override void OnUpdate(TimeSpan elapsed)
+		public override void OnUpdate(float elapsed)
 		{
 			int GetOffsetCellIndex(int x, int y) => (pointStack.Peek().Y + y) * MazeWidth + (pointStack.Peek().X + x);
 

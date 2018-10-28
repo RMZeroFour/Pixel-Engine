@@ -16,7 +16,7 @@ namespace Examples
 		// Uncomment to make fullscreen
 		//public override void OnCreate() => Fullscreen();
 
-		public override void OnUpdate(TimeSpan elapsed)
+		public override void OnUpdate(float elapsed)
 		{
 			// Loop through all the pixels
 			for (int i = 0; i < ScreenWidth; i++)

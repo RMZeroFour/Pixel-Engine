@@ -29,7 +29,7 @@ namespace Examples
 			RecalculateMap();
 		}
 		
-		public override void OnUpdate(TimeSpan elapsed)
+		public override void OnUpdate(float elapsed)
 		{
 			// Adjust hue divisor based on input
 			if (GetKey(Key.Up).Down)
