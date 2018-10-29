@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace PixelEngine
 {
 	public struct Point
@@ -18,6 +11,6 @@ namespace PixelEngine
 		public int X { get; private set; }
 		public int Y { get; private set; }
 
-		public static Point Origin = new Point();
+		public static Point Origin => new Point();
 	}
 }

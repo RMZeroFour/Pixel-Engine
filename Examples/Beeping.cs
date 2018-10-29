@@ -10,13 +10,13 @@ namespace Examples
 
 		static void Main(string[] args)
 		{
-			Tester t = new Tester(); // Create an instance
+			Beeping t = new Beeping(); // Create an instance
 			t.Construct(); // Construct the app
 			t.Start(); // Start the app
 		}
 
 		// Enable the sound system
-		public override void OnCreate() => EnableSound = true;
+		public override void OnCreate() => Enable(Subsystem.Audio);
 
 		// Override to generate sound in real time
 		// This is generating a sin wave

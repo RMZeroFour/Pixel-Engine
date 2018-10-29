@@ -54,9 +54,9 @@ namespace Examples
 		public override void OnCreate()
 		{
 			// Uncomment to make the game fullscreen
-			//Fullscreen();
+			//Enable(Subsystem.Fullscreen);
 
-			EnableHrText();
+			Enable(Subsystem.HrText);
 
 			Reset();
 		}
@@ -173,15 +173,13 @@ namespace Examples
 			}
 
 			// Check wall collision
-			if (snake[0].X < -1 || snake[0].X >= ScreenWidth + 1 || snake[0].Y < -1 || snake[0].Y >= ScreenHeight + 1)
+			if (snake[0].X <= 0 || snake[0].X >= ScreenWidth || snake[0].Y <= 0 || snake[0].Y >= ScreenHeight - 1)
 				dead = true;
 
 			// Check self collision
 			for (int i = 1; i < snake.Count; i++)
-			{
 				if (snake[i].X == snake[0].X && snake[i].Y == snake[0].Y)
 					dead = true;
-			}
 		}
 
 		// Check if the game is started

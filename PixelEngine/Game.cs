@@ -114,57 +114,15 @@ namespace PixelEngine
 			ConstructFontSheet();
 			HandleDrawTarget();
 		}
-		public void Fullscreen()
-		{
-			MonitorInfo mi = new MonitorInfo();
-			mi.Size = Marshal.SizeOf(mi);
-
-			if (GetMonitorInfo(MonitorFromWindow(Handle, MonitorDefaultNearest), ref mi))
-			{
-				int style = GetWindowLong(Handle, (int)WindowLongs.STYLE);
-
-				SetWindowLong(Handle, (int)WindowLongs.STYLE, style & ~(int)WindowStyles.OverlappedWindow);
-
-				SetWindowPos(Handle, WindowTop,
-							 mi.Monitor.Left, mi.Monitor.Top,
-							 mi.Monitor.Right - mi.Monitor.Left,
-							 mi.Monitor.Bottom - mi.Monitor.Top,
-							 (uint)(SWP.NoOwnerZOrder | SWP.FrameChanged));
-			}
-
-			GetClientRect(Handle, out Rect r);
-			ClientRect = r;
-
-			windowWidth = r.Right - r.Left;
-			windowHeight = r.Bottom - r.Top;
-
-			ScreenWidth = windowWidth / PixWidth;
-			ScreenHeight = windowHeight / PixHeight;
-
-			HandleDrawTarget();
-		}
-		public void EnableSound()
-		{
-			if (audio == null)
-			{
-				audio = new AudioEngine
-				{
-					OnSoundCreate = this.OnSoundCreate,
-					OnSoundFilter = this.OnSoundFilter
-				};
-			}
-
-			audio.CreateAudio();
-		}
 		private void GameLoop()
 		{
 			StartTime = DateTime.Now;
 
+			OnCreate();
+
 			canvas = new OpenGL();
 			canvas.Create(this);
 			canvas.Initialize(defDrawTarget, textTarget);
-
-			OnCreate();
 
 			DateTime t1, t2;
 			t1 = t2 = DateTime.Now;
@@ -903,13 +861,65 @@ namespace PixelEngine
 		}
 		#endregion
 
-		#region Text
-		public void EnableHrText()
+		#region Subsystems
+		public enum Subsystem
 		{
-			hrText = true;
-			textTarget = new Sprite(windowWidth, windowHeight);
+			Fullscreen,
+			Audio,
+			HrText
 		}
+		public void Enable(Subsystem subsystem)
+		{
+			switch (subsystem)
+			{
+				case Subsystem.Fullscreen:
+					MonitorInfo mi = new MonitorInfo();
+					mi.Size = Marshal.SizeOf(mi);
 
+					if (GetMonitorInfo(MonitorFromWindow(Handle, MonitorDefaultNearest), ref mi))
+					{
+						int style = GetWindowLong(Handle, (int)WindowLongs.STYLE);
+
+						SetWindowLong(Handle, (int)WindowLongs.STYLE, style & ~(int)WindowStyles.OverlappedWindow);
+
+						SetWindowPos(Handle, WindowTop,
+									 mi.Monitor.Left, mi.Monitor.Top,
+									 mi.Monitor.Right - mi.Monitor.Left,
+									 mi.Monitor.Bottom - mi.Monitor.Top,
+									 (uint)(SWP.NoOwnerZOrder | SWP.FrameChanged));
+					}
+
+					GetClientRect(Handle, out Rect r);
+					ClientRect = r;
+
+					windowWidth = r.Right - r.Left;
+					windowHeight = r.Bottom - r.Top;
+
+					ScreenWidth = windowWidth / PixWidth;
+					ScreenHeight = windowHeight / PixHeight;
+
+					HandleDrawTarget();
+					break;
+
+				case Subsystem.Audio:
+					if (audio == null)
+						audio = new AudioEngine
+						{
+							OnSoundCreate = this.OnSoundCreate,
+							OnSoundFilter = this.OnSoundFilter
+						};
+					audio.CreateAudio();
+					break;
+
+				case Subsystem.HrText:
+					hrText = true;
+					textTarget = new Sprite(windowWidth, windowHeight);
+					break;
+			}
+		}
+		#endregion
+
+		#region Text
 		public void DrawText(Point p, string text, Pixel col, int scale = 1)
 		{
 			if (string.IsNullOrWhiteSpace(text))

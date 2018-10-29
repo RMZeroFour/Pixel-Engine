@@ -79,8 +79,8 @@ namespace PixelEngine
 					{
 						float nx = i * sw;
 						float ny = j * sh;
-						float ex = (i + 1) * sw;
-						float ey = (j + 1) * sh;
+						float ex = (i + game.PixWidth) * sw;
+						float ey = (j + game.PixHeight) * sh;
 
 						nx = nx * 2 - 1;
 						ny = ny * 2 - 1;

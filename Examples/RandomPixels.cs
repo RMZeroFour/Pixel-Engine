@@ -1,4 +1,3 @@
-using System;
 using PixelEngine;
 
 namespace Examples
@@ -14,7 +13,7 @@ namespace Examples
 		}
 
 		// Uncomment to make fullscreen
-		//public override void OnCreate() => Fullscreen();
+		public override void OnCreate() => Enable(Subsystem.Fullscreen);
 
 		public override void OnUpdate(float elapsed)
 		{

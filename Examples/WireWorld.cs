@@ -15,7 +15,7 @@ namespace Examples
 		static void Main(string[] args)
 		{
 			WireWorld ww = new WireWorld();
-			ww.Construct(75, 75, 10, 10, 25);
+			ww.Construct(75, 75, 10, 10, 30);
 			ww.Start();
 		}
 
@@ -169,7 +169,7 @@ namespace Examples
 
 		public override void OnMouseDown(Mouse m)
 		{
-			if(!running)
+			if (!running)
 			{
 				// Place conductors
 				if (m == Mouse.Left)
@@ -178,7 +178,7 @@ namespace Examples
 				else if (m == Mouse.Right)
 					current[MouseX, MouseY] = Cell.Empty;
 				if (m == Mouse.Middle)
-				{	
+				{
 					// Middle + Shift => Tail
 					if (GetKey(Key.Shift).Down)
 						current[MouseX, MouseY] = Cell.ElectronTail;
@@ -201,7 +201,7 @@ namespace Examples
 			// Simulate next frame
 			if (k == Key.F)
 				UpdateCells();
-			
+
 			// Reset the field
 			if (k == Key.R)
 			{
