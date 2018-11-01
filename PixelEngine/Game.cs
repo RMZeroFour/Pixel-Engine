@@ -335,13 +335,16 @@ namespace PixelEngine
 		protected float Sin(float val) => (float)Math.Sin(val);
 		protected float Cos(float val) => (float)Math.Cos(val);
 		protected float Tan(float val) => (float)Math.Tan(val);
+		protected float Cot(float val) => 1 / Tan(val);
+		protected float Sec(float val) => 1 / Cos(val);
+		protected float Csc(float val) => 1 / Sin(val);
 
 		protected float Power(float val, float pow) => (float)Math.Pow(val, pow);
 		protected float Round(float val, int digits = 0) => (float)Math.Round(val, digits);
 
 		protected float Map(float val, float oMin, float oMax, float nMin, float nMax) => (val - oMin) / (oMax - oMin) * (nMax - nMin) + nMin;
 		protected float Constrain(float val, float min, float max) => Math.Max(Math.Min(max, val), min);
-		protected float Lerp(float start, float end, float amt) => Map(Constrain(amt, 0, 1), 0, 1, start, end);
+		protected float Lerp(float start, float end, float amt) => Map(amt, 0, 1, start, end);
 		protected float Distance(float x1, float y1, float x2, float y2) => Power(Power(x2 - x1, 2) + Power(y2 - y1, 2), 1 / 2);
 
 		protected void Seed() => Randoms.Seed = (int)((DateTime.Now - StartTime).Ticks % int.MaxValue);
