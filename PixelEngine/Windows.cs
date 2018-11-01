@@ -619,11 +619,26 @@ namespace PixelEngine
 
 		[DllImport(User, SetLastError = true)]
 		public static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
+
+		[DllImport(User, SetLastError = true)]
+		public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
 		#endregion
 
 		#region Kernel
 		[DllImport(Kernel, CharSet = CharSet.Auto)]
 		public static extern IntPtr GetModuleHandle(string lpModuleName);
+
+		[DllImport(Kernel)]
+		public static extern IntPtr GetConsoleWindow();
+
+		[DllImport(Kernel)]
+		public static extern bool AllocConsole();
+
+		[DllImport(Kernel)]
+		public static extern bool FreeConsole();
+
+		[DllImport(Kernel)]
+		public static extern uint GetCurrentProcessId();
 		#endregion
 
 		#region Winmm
@@ -673,6 +688,9 @@ namespace PixelEngine
 
 		[DllImport(OpenGl, SetLastError = true, EntryPoint = "wglDeleteContext")]
 		public static extern IntPtr WglDeleteContext(IntPtr hdc);
+		
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "wglGetProcAddress")]
+		public static extern IntPtr WglGetProcAddress(string name);
 
 		[DllImport(OpenGl, SetLastError = true, EntryPoint = "wglMakeCurrent")]
 		public static extern int WglMakeCurrent(IntPtr hdc, IntPtr hrc);
@@ -722,7 +740,7 @@ namespace PixelEngine
 		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glColor3ub")]
 		public static extern void GlColor3ub(byte red, byte green, byte blue);
 
-		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glColor4ub")]
+		[ DllImport(OpenGl, SetLastError = true, EntryPoint = "glColor4ub")]
 		public static extern void GlColor4ub(byte red, byte green, byte blue, byte alpha);
 
 		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glTranslatef")]
@@ -736,6 +754,9 @@ namespace PixelEngine
 
 		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glRectf")]
 		public static extern void GlRectF(float x1, float y1, float x2, float y2);
+
+		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glRecti")]
+		public static extern void GlRectI(int x1, int y1, int x2, int y2);
 		#endregion
 
 		#region Gdi

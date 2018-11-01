@@ -39,6 +39,7 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Algorithms.cs" />
     <Compile Include="Button.cs" />
     <Compile Include="Display.cs" />
     <Compile Include="Enums.cs" />

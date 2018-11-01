@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using static PixelEngine.Windows;
 
 namespace PixelEngine
@@ -9,6 +10,10 @@ namespace PixelEngine
 
 		private IntPtr deviceContext;
 		private IntPtr renderContext;
+
+		private float sw,sh;
+		private float pw,ph;
+		private float ww, wh;
 
 		public void Create(Game game)
 		{
@@ -42,32 +47,38 @@ namespace PixelEngine
 			GlTexEnvf((uint)GL.TextureEnv, (uint)GL.TextureEnvMode, (float)GL.Decal);
 		}
 
+		private delegate bool SwapInterval(int interval);
+
 		public unsafe void Initialize(Sprite drawTarget, Sprite textTarget)
 		{
 			fixed (Pixel* ptr = drawTarget.GetData())
-				GlTexImage2D((uint)GL.Texture2D, 0, (uint)GL.RGBA, 
+				GlTexImage2D((uint)GL.Texture2D, 0, (uint)GL.RGBA,
 					game.ScreenWidth, game.ScreenHeight,
 					0, (uint)GL.RGBA, (uint)GL.UnsignedByte, ptr);
+
+			IntPtr proc = WglGetProcAddress("wglSwapIntervalEXT");
+			SwapInterval si = Marshal.GetDelegateForFunctionPointer<SwapInterval>(proc);
+			si(0);
+
+			sw = 1f / game.ScreenWidth;
+			sh = 1f / game.ScreenHeight;
+			pw = game.PixWidth * sw;
+			ph = game.PixHeight * sh;
+			ww = 1f / game.windowWidth;
+			wh = 1f / game.windowHeight;
 		}
 
 		public void Draw(Sprite drawTarget, Sprite textTarget)
 		{
 			void MakeQuad(Pixel p, float nx, float ny, float ex, float ey)
 			{
-				GlPushMatrix();
 				GlColor4ub(p.R, p.G, p.B, p.A);
 				GlVertex2f(nx, -ny);
 				GlVertex2f(nx, -ey);
 				GlVertex2f(ex, -ey);
 				GlVertex2f(ex, -ny);
-				GlPopMatrix();
 			}
 
-			float sw = 1f / game.ScreenWidth;
-			float sh = 1f / game.ScreenHeight;
-			float ww = 1f / game.windowWidth;
-			float wh = 1f / game.windowHeight;
-		
 			GlBegin((uint)GL.Quads);
 			for (int i = 0; i < drawTarget.Width; i++)
 			{
@@ -79,8 +90,8 @@ namespace PixelEngine
 					{
 						float nx = i * sw;
 						float ny = j * sh;
-						float ex = (i + game.PixWidth) * sw;
-						float ey = (j + game.PixHeight) * sh;
+						float ex = nx + pw;
+						float ey = ny + ph;
 
 						nx = nx * 2 - 1;
 						ny = ny * 2 - 1;

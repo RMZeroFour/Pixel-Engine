@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+
 using static PixelEngine.Windows;
 
 namespace PixelEngine
@@ -308,6 +309,7 @@ namespace PixelEngine
 		#endregion
 
 		#region Helpers
+		#region Engine
 		protected void Delay(float time)
 		{
 			if (!delaying)
@@ -327,7 +329,9 @@ namespace PixelEngine
 		protected Button GetMouse(Mouse m) => mouse[(int)m];
 
 		protected Pixel GetScreenPixel(int x, int y) => DrawTarget[x, y];
+		#endregion
 
+		#region Math
 		protected float Sin(float val) => (float)Math.Sin(val);
 		protected float Cos(float val) => (float)Math.Cos(val);
 		protected float Tan(float val) => (float)Math.Tan(val);
@@ -355,6 +359,63 @@ namespace PixelEngine
 		protected float Radians(float degrees) => (float)(degrees * Math.PI / 180);
 		#endregion
 
+		#region Collections
+		protected T[] CopyArray<T>(params T[] items)
+		{
+			T[] copy = new T[items.Length];
+			items.CopyTo(copy, 0);
+			return copy;
+		}
+		protected List<T> CopyList<T>(List<T> items) => new List<T>(items);
+
+		protected T[] MakeArray<T>(params T[] items) => items;
+		protected T[] MakeArray<T>(int count, Func<int, T> selector)
+		{
+			T[] arr = new T[count];
+			for (int i = 0; i < count; i++)
+				arr[i] = selector(i);
+			return arr;
+		}
+
+		protected List<T> MakeList<T>(params T[] items) => items.ToList();
+		protected List<T> MakeList<T>(int count, Func<int, T> selector)
+		{
+			List<T> list = new List<T>(count);
+			for (int i = 0; i < count; i++)
+				list[i] = selector(i);
+			return list;
+		}
+
+		protected Dictionary<T, U> MakeDict<T, U>(List<T> keys, List<U> values)
+		{
+			if (keys.Count != values.Count)
+				return null;
+
+			Dictionary<T, U> dict = new Dictionary<T, U>(keys.Count);
+			for (int i = 0; i < keys.Count; i++)
+				dict.Add(keys[i], values[i]);
+			return dict;
+		}
+		protected Dictionary<T, U> MakeDict<T, U>(T[] keys, U[] values)
+		{
+			if (keys.Length != values.Length)
+				return null;
+
+			Dictionary<T, U> dict = new Dictionary<T, U>(keys.Length);
+			for (int i = 0; i < keys.Length; i++)
+				dict.Add(keys[i], values[i]);
+			return dict;
+		}
+		protected Dictionary<T, U> MakeDict<T, U>(int count, Func<int, T> keySelector, Func<int, U> valSelector)
+		{
+			Dictionary<T, U> dict = new Dictionary<T, U>(count);
+			for (int i = 0; i < count; i++)
+				dict.Add(keySelector(i), valSelector(i));
+			return dict;
+		}
+		#endregion
+		#endregion
+
 		#region Inner
 		private void UpdateMouse(uint x, uint y)
 		{
@@ -363,7 +424,7 @@ namespace PixelEngine
 		}
 		private void ConstructFontSheet()
 		{
-			StringBuilder data = new StringBuilder();
+			StringBuilder data = new StringBuilder(1024);
 			data.Append("?Q`0001oOch0o01o@F40o0<AGD4090LAGD<090@A7ch0?00O7Q`0600>00000000");
 			data.Append("O000000nOT0063Qo4d8>?7a14Gno94AA4gno94AaOT0>o3`oO400o7QN00000400");
 			data.Append("Of80001oOg<7O7moBGT7O7lABET024@aBEd714AiOdl717a_=TH013Q>00000000");
@@ -856,8 +917,6 @@ namespace PixelEngine
 				for (int i = 0; i < pixels.Length; i++)
 					pixels[i] = Pixel.Empty;
 			}
-
-			canvas.Clear();
 		}
 		#endregion
 
@@ -917,19 +976,12 @@ namespace PixelEngine
 					break;
 			}
 		}
-		#endregion
 
 		#region Text
 		public void DrawText(Point p, string text, Pixel col, int scale = 1)
 		{
 			if (string.IsNullOrWhiteSpace(text))
 				return;
-
-			void SetPixel(int a, int b)
-			{
-				if (a >= 0 && a < drawTarget.Width && b >= 0 && b < drawTarget.Height)
-					drawTarget[a, b] = col;
-			}
 
 			Pixel.Mode prev = PixelMode;
 			if (col.A != 255)
@@ -959,14 +1011,14 @@ namespace PixelEngine
 								if (fontSprite[i + ox * 8, j + oy * 8].R > 0)
 									for (int ni = 0; ni < scale; ni++)
 										for (int nj = 0; nj < scale; nj++)
-											SetPixel(p.X + sx + i * scale + ni, p.Y + sy + j * scale + nj);
+											Draw(p.X + sx + i * scale + ni, p.Y + sy + j * scale + nj, col);
 					}
 					else
 					{
 						for (int i = 0; i < 8; i++)
 							for (int j = 0; j < 8; j++)
 								if (fontSprite[i + ox * 8, j + oy * 8].R > 0)
-									SetPixel(p.X + sx + i, p.Y + sy + j);
+									Draw(p.X + sx + i, p.Y + sy + j, col);
 					}
 					sx += 8 * scale;
 				}
@@ -979,10 +1031,31 @@ namespace PixelEngine
 			if (!hrText || string.IsNullOrWhiteSpace(text))
 				return;
 
-			void SetPixel(int a, int b)
+			void SetPixel(int i, int j)
 			{
-				if (a >= 0 && a < textTarget.Width && b >= 0 && b < textTarget.Height)
-					textTarget[a, b] = col;
+				switch (PixelMode)
+				{
+					case Pixel.Mode.Normal:
+						if (i >= 0 && i < textTarget.Width && j >= 0 && j < textTarget.Height)
+							textTarget[i, j] = col;
+						break;
+					case Pixel.Mode.Mask:
+						if (col.A == 255)
+							if (i >= 0 && i < textTarget.Width && j >= 0 && j < textTarget.Height)
+								textTarget[i, j] = col;
+						break;
+					case Pixel.Mode.Alpha:
+						Pixel d = drawTarget[p.X, p.Y];
+						float a = col.A / 255.0f * PixelBlend;
+						float c = 1.0f - a;
+						float r = a * col.R + c * d.R;
+						float g = a * col.G + c * d.G;
+						float b = a * col.B + c * d.B;
+						Pixel pix = new Pixel((byte)r, (byte)g, (byte)b);
+						if (i >= 0 && i < textTarget.Width && j >= 0 && j < textTarget.Height)
+							textTarget[i, j] = col;
+						break;
+				}
 			}
 
 			int sx = 0;
@@ -1042,6 +1115,7 @@ namespace PixelEngine
 			if (audio != null)
 				audio.StopSound(s);
 		}
+		#endregion
 		#endregion
 
 		#region Functionality

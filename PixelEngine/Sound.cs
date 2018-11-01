@@ -261,26 +261,28 @@ namespace PixelEngine
 		{
 			float mixerSample = 0.0f;
 
-			if (Volume > 0)
+			
+			if (playingSamples != null)
 			{
-				if (playingSamples != null)
+				for (int i = 0; i < playingSamples.Count; i++)
 				{
-					for (int i = 0; i < playingSamples.Count; i++)
+					PlayingSample ps = playingSamples[i];
+
+					ps.SamplePosition += (long)(ps.AudioSample.WavHeader.SamplesPerSec * timeStep);
+
+					if (Volume > 0)
 					{
-						PlayingSample ps = playingSamples[i];
-
-						ps.SamplePosition += (long)(ps.AudioSample.WavHeader.SamplesPerSec * timeStep);
-
 						if (ps.SamplePosition < ps.AudioSample.SampleCount)
 							mixerSample += ps.AudioSample.Samples[(ps.SamplePosition * ps.AudioSample.Channels) + channel];
-						else if (ps.Loop)
-							ps.SamplePosition = 0;
-						else
-							ps.Finished = true;
-
-						playingSamples[i] = ps;
 					}
+					
+					else if (ps.Loop)
+						ps.SamplePosition = 0;
+					else
+						ps.Finished = true;
 
+					playingSamples[i] = ps;
+				
 					playingSamples.RemoveAll(s => s.Finished);
 				}
 
