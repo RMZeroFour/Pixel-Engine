@@ -70,6 +70,13 @@ namespace PixelEngine
 			Apricot = 0xffd8b1,
 			Navy = 0x000075,
 			Black = 0x000000,
+			DarkGrey = 0x808080,
+			DarkRed = 0x800000,
+			DarkYellow = 0x808000,
+			DarkGreen = 0x008000,
+			DarkCyan = 0x008080,
+			DarkBlue = 0x000080,
+			DarkMagenta = 0x800080
 		}
 
 		public static readonly Pixel Empty = new Pixel(0, 0, 0, 0);
