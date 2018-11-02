@@ -14,7 +14,8 @@ namespace PixelEngine
 		#region Members
 		protected Pixel.Mode PixelMode { get; set; } = Pixel.Mode.Normal;
 		protected float PixelBlend { get => pixBlend; set => pixBlend = Constrain(value, 0, 1); }
-		protected DateTime StartTime { get; set; }
+		protected DateTime StartTime { get; private set; }
+		protected float TotalTime => (float)(DateTime.Now - StartTime).TotalMilliseconds;
 		protected long FrameCount { get; private set; }
 		protected bool Focus { get; private set; }
 		protected int FrameRate { get; private set; }
@@ -346,6 +347,7 @@ namespace PixelEngine
 		protected float Constrain(float val, float min, float max) => Math.Max(Math.Min(max, val), min);
 		protected float Lerp(float start, float end, float amt) => Map(amt, 0, 1, start, end);
 		protected float Distance(float x1, float y1, float x2, float y2) => Power(Power(x2 - x1, 2) + Power(y2 - y1, 2), 1 / 2);
+		protected bool Between(float val, float min, float max) => val > min && val < max;
 
 		protected void Seed() => Randoms.Seed = (int)((DateTime.Now - StartTime).Ticks % int.MaxValue);
 		protected void Seed(int s) => Randoms.Seed = s;
