@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Drawing;
+﻿using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 
 namespace PixelEngine
@@ -23,13 +23,25 @@ namespace PixelEngine
 
 			colorData = new Pixel[Width * Height];
 
-			for (int i = 0; i < Width; i++)
+			unsafe
 			{
-				for (int j = 0; j < Height; j++)
+				Rectangle rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+				BitmapData bmpData = bmp.LockBits(rect, ImageLockMode.ReadOnly, bmp.PixelFormat);
+
+				int* scan0 = (int*)bmpData.Scan0;
+
+				int stride = bmpData.Stride / 4;
+
+				for (int x = 0; x < Width; x++)
 				{
-					Color c = bmp.GetPixel(i, j);
-					this[i, j] = new Pixel(c.R, c.G, c.B, c.A);
+					for (int y = 0; y < Height; y++)
+					{
+						Color c = Color.FromArgb(*(scan0 + x + y * stride));
+						this[x, y] = new Pixel(c.R, c.G, c.B, c.A);
+					}
 				}
+
+				bmp.UnlockBits(bmpData);
 			}
 		}
 		private static Sprite LoadFromSpr(string path)
@@ -72,7 +84,7 @@ namespace PixelEngine
 
 				for (int i = 0; i < w; i++)
 					for (int j = 0; j < h; j++)
-						spr[j, i] = Parse(reader.ReadInt16());
+						spr[i, j] = Parse(reader.ReadInt16());
 			}
 
 			return spr;
@@ -91,18 +103,29 @@ namespace PixelEngine
 		}
 		public static void Save(Sprite spr, string path)
 		{
-			using (Bitmap bmp = new Bitmap(spr.Width, spr.Height))
+			unsafe
 			{
-				for (int i = 0; i < spr.Width; i++)
+				using (Bitmap bmp = new Bitmap(spr.Width, spr.Height))
 				{
-					for (int j = 0; j < spr.Height; j++)
-					{
-						Pixel p = spr[i, j];
-						bmp.SetPixel(i, j, Color.FromArgb(p.A, p.R, p.G, p.B));
-					}
-				}
+					Rectangle rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+					BitmapData bmpData = bmp.LockBits(rect, ImageLockMode.ReadOnly, bmp.PixelFormat);
 
-				bmp.Save(path);
+					int* scan0 = (int*)bmpData.Scan0;
+					int stride = bmpData.Stride / 4;
+
+					for (int x = 0; x < spr.Width; x++)
+					{
+						for (int y = 0; y < spr.Height; y++)
+						{
+							Pixel p = spr[x, y];
+							Color c = Color.FromArgb(p.A, p.R, p.G, p.B);
+							*(scan0 + x + y * stride) = c.ToArgb();
+						}
+					}
+
+					bmp.UnlockBits(bmpData);
+					bmp.Save(path);
+				}
 			}
 		}
 		public static void Copy(Sprite src, Sprite dest)
