@@ -8,16 +8,16 @@ This engine uses OpenGL and the .NET Framework, so it's quite fast due to OpenGL
 
 ## Getting Started
 
-1. Grab the library from the Libraries folder.
+1. Grab the library from the [Libraries](https://github.com/DevChrome/Pixel-Engine/tree/master/Libraries) folder.
 2. Create a new C# project.
-  2.1. Add a reference to the library in your project.
+3. Add a reference to the library in your project.
 4. Subclass the Game class in the engine.
-  4.1. Add a Main method.
-    4.1.1. Instantiate the class.
-    4.1.2. Call its Construct method.
-    4.1.3. Call its Start method.
-  4.2. Override the required methods.
-5. Start the application.
+5. Add a Main method.
+6. Instantiate the class.
+7. Call its Construct method.
+8. Call its Start method.
+9. Override the required methods.
+10. Start the application.
 
 ```C#
 using PixelEngine;
@@ -31,14 +31,14 @@ namespace Examples
 			// Create an instance
 			RandomPixels rp = new RandomPixels();
       
-      // Construct the 100x100 game window with 5x5 pixels
+      			// Construct the 100x100 game window with 5x5 pixels
 			rp.Construct(100, 100, 5, 5); 
       
-      // Start and show a window
+      			// Start and show a window
 			rp.Start(); 
 		}
 
-	  public override void OnUpdate(float elapsed)
+	  	public override void OnUpdate(float elapsed)
 		{
 			// Loop through all the pixels
 			for (int i = 0; i < ScreenWidth; i++)
@@ -49,9 +49,13 @@ namespace Examples
 }
 ```
 
-### Prerequisites
+## Prerequisites
 
 There are no additional dependencies outside the Windows Api, which is present in all windows installations.
+
+## Examples
+
+There are many examples present in the [Examples](https://github.com/DevChrome/Pixel-Engine/tree/master/Examples) folder, including Javidx9's and my own.
 
 ## Deployment
 
