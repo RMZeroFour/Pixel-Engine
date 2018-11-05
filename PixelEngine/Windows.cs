@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Text;
 
 namespace PixelEngine
 {
-	internal class Windows
+	[SuppressUnmanagedCodeSecurity]
+	internal static unsafe class Windows
 	{
 		#region Constants
 		public const int DoubleClicks = 0x8;
@@ -543,6 +545,8 @@ namespace PixelEngine
 
 		#region Delegates
 		public delegate void WaveDelegate(IntPtr hdrvr, int uMsg, int dwUser, ref WaveHdr wavhdr, int dwParam2);
+
+		public delegate bool SwapInterval(int interval);
 		#endregion
 
 		#region Methods
@@ -619,67 +623,25 @@ namespace PixelEngine
 
 		[DllImport(User, SetLastError = true)]
 		public static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
-
-		[DllImport(User, SetLastError = true)]
-		public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
 		#endregion
 
 		#region Kernel
 		[DllImport(Kernel, CharSet = CharSet.Auto)]
 		public static extern IntPtr GetModuleHandle(string lpModuleName);
-
-		[DllImport(Kernel)]
-		public static extern IntPtr GetConsoleWindow();
-
-		[DllImport(Kernel)]
-		public static extern bool AllocConsole();
-
-		[DllImport(Kernel)]
-		public static extern bool FreeConsole();
-
-		[DllImport(Kernel)]
-		public static extern uint GetCurrentProcessId();
 		#endregion
 
 		#region Winmm
-		[DllImport(Winmm, EntryPoint = "mciSendString")]
-		public static extern int MciSendString(string command, StringBuilder buffer, int bufferSize, IntPtr hwndCallback);
-
-		[DllImport(Winmm, EntryPoint = "waveOutGetNumDevs")]
-		public static extern int WaveOutGetNumDevs();
-
 		[DllImport(Winmm, EntryPoint = "waveOutPrepareHeader")]
 		public static extern int WaveOutPrepareHeader(IntPtr hWaveOut, ref WaveHdr lpWaveOutHdr, int uSize);
 
 		[DllImport(Winmm, EntryPoint = "waveOutUnprepareHeader")]
 		public static extern int WaveOutUnprepareHeader(IntPtr hWaveOut, ref WaveHdr lpWaveOutHdr, int uSize);
 
-		[DllImport(Winmm, EntryPoint = "waveOutWrite")]
-		public static extern int WaveOutWrite(IntPtr hWaveOut, ref WaveHdr lpWaveOutHdr, int uSize);
-
 		[DllImport(Winmm, EntryPoint = "waveOutOpen")]
 		public static extern int WaveOutOpen(out IntPtr hWaveOut, int uDeviceID, WaveFormatEx lpFormat, WaveDelegate dwCallback, int dwInstance, int dwFlags);
 
-		[DllImport(Winmm, EntryPoint = "waveOutReset")]
-		public static extern int WaveOutReset(IntPtr hWaveOut);
-
-		[DllImport(Winmm, EntryPoint = "waveOutClose")]
-		public static extern int WaveOutClose(IntPtr hWaveOut);
-
-		[DllImport(Winmm, EntryPoint = "waveOutPause")]
-		public static extern int WaveOutPause(IntPtr hWaveOut);
-
-		[DllImport(Winmm, EntryPoint = "waveOutRestart")]
-		public static extern int WaveOutRestart(IntPtr hWaveOut);
-
-		[DllImport(Winmm, EntryPoint = "waveOutGetPosition")]
-		public static extern int WaveOutGetPosition(IntPtr hWaveOut, out int lpInfo, int uSize);
-
-		[DllImport(Winmm, EntryPoint = "waveOutSetVolume")]
-		public static extern int WaveOutSetVolume(IntPtr hWaveOut, int dwVolume);
-
-		[DllImport(Winmm, EntryPoint = "waveOutGetVolume")]
-		public static extern int WaveOutGetVolume(IntPtr hWaveOut, out int dwVolume);
+		[DllImport(Winmm, EntryPoint = "waveOutWrite")]
+		public static extern int WaveOutWrite(IntPtr hWaveOut, ref WaveHdr lpWaveOutHdr, int uSize);
 		#endregion
 
 		#region OpenGL
@@ -688,7 +650,7 @@ namespace PixelEngine
 
 		[DllImport(OpenGl, SetLastError = true, EntryPoint = "wglDeleteContext")]
 		public static extern IntPtr WglDeleteContext(IntPtr hdc);
-		
+
 		[DllImport(OpenGl, SetLastError = true, EntryPoint = "wglGetProcAddress")]
 		public static extern IntPtr WglGetProcAddress(string name);
 
@@ -711,22 +673,18 @@ namespace PixelEngine
 		public static extern void GlTexEnvf(uint target, uint pname, float param);
 
 		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glTexImage2D")]
-		public static unsafe extern void GlTexImage2D(uint target, int level, uint internalformat, int width, int height, int border, uint format, uint type, Pixel* pixels);
+		public static extern void GlTexImage2D(uint target, int level, uint internalformat, int width, int height, int border, uint format, uint type, Pixel* pixels);
 
 		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glTexSubImage2D")]
-		public static unsafe extern void GlTexSubImage2D(uint target, int level, int xoffset, int yoffset, int width, int height, uint format, uint type, Pixel* pixels);
+		public static extern void GlTexSubImage2D(uint target, int level, int xoffset, int yoffset, int width, int height, uint format, uint type, Pixel* pixels);
 
+		//[SuppressUnmanagedCodeSecurity]
 		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glBegin")]
 		public static extern void GlBegin(uint mode);
 
+		//[SuppressUnmanagedCodeSecurity]
 		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glEnd")]
 		public static extern void GlEnd();
-
-		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glPushMatrix")]
-		public static extern void GlPushMatrix();
-
-		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glPopMatrix")]
-		public static extern void GlPopMatrix();
 
 		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glTexCoord2f")]
 		public static extern void GlTexCoord2f(float s, float t);
@@ -734,29 +692,13 @@ namespace PixelEngine
 		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glVertex3f")]
 		public static extern void GlVertex3f(float x, float y, float z);
 
+		//[SuppressUnmanagedCodeSecurity]
 		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glVertex2f")]
 		public static extern void GlVertex2f(float x, float y);
 
+		//[SuppressUnmanagedCodeSecurity]
 		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glColor3ub")]
 		public static extern void GlColor3ub(byte red, byte green, byte blue);
-
-		[ DllImport(OpenGl, SetLastError = true, EntryPoint = "glColor4ub")]
-		public static extern void GlColor4ub(byte red, byte green, byte blue, byte alpha);
-
-		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glTranslatef")]
-		public static extern void GlTranslateF(float x, float y, float z);
-
-		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glClearColor")]
-		public static extern void GlClearColor(float red, float green, float blue, float alpha);
-
-		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glClear")]
-		public static extern void GlClear(uint mask);
-
-		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glRectf")]
-		public static extern void GlRectF(float x1, float y1, float x2, float y2);
-
-		[DllImport(OpenGl, SetLastError = true, EntryPoint = "glRecti")]
-		public static extern void GlRectI(int x1, int y1, int x2, int y2);
 		#endregion
 
 		#region Gdi

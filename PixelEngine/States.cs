@@ -25,7 +25,7 @@ namespace PixelEngine
 			}
 		}
 
-		public void OnTransition(Action<T> transition) => this.transition = transition;
+		public void OnTransition(Action<T> transition) => this.transition += transition;
 
 		public void Switch(T newState)
 		{

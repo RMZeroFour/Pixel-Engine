@@ -84,7 +84,11 @@ namespace PixelEngine
 		private static Pixel[] presetPix;
 		#endregion
 
-		public static bool operator ==(Pixel a, Pixel b) => (a.R == b.R) && (a.G == b.G) && (a.B == b.B) && (a.A == b.A);
+		public static bool operator ==(Pixel a, Pixel b)
+		{
+			return (a.R == b.R) && (a.G == b.G) && (a.B == b.B) && (a.A == b.A);
+		}
+
 		public static bool operator !=(Pixel a, Pixel b) => !(a == b);
 
 		public static implicit operator Pixel(Presets p)

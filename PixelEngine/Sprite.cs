@@ -158,7 +158,7 @@ namespace PixelEngine
 				colorData[y * Width + x] = p;
 		}
 		
-		internal Pixel[] GetData() => colorData;
+		internal ref Pixel[] GetData() => ref colorData;
 		private Pixel[] colorData = null;
 	}
 }

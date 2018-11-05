@@ -54,6 +54,7 @@
     <Compile Include="Sound.cs" />
     <Compile Include="Sprite.cs" />
     <Compile Include="States.cs" />
+    <Compile Include="Time.cs" />
     <Compile Include="Timer.cs" />
     <Compile Include="Windows.cs" />
   </ItemGroup>

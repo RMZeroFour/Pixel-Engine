@@ -14,14 +14,13 @@ namespace PixelEngine
 		#region Members
 		protected Pixel.Mode PixelMode { get; set; } = Pixel.Mode.Normal;
 		protected float PixelBlend { get => pixBlend; set => pixBlend = Constrain(value, 0, 1); }
-		protected DateTime StartTime { get; private set; }
-		protected float TotalTime => (float)(DateTime.Now - StartTime).TotalMilliseconds;
 		protected long FrameCount { get; private set; }
 		protected bool Focus { get; private set; }
 		protected int FrameRate { get; private set; }
 		protected int MouseX { get; private set; }
 		protected int MouseY { get; private set; }
 		protected int MouseScroll { get; private set; }
+		protected Time Time { get; private set; }
 		protected float Volume
 		{
 			get
@@ -118,7 +117,7 @@ namespace PixelEngine
 		}
 		private void GameLoop()
 		{
-			StartTime = DateTime.Now;
+			Time = new Time();
 
 			OnCreate();
 
@@ -137,7 +136,8 @@ namespace PixelEngine
 				while (active)
 				{
 					t2 = DateTime.Now;
-					float elapsed = (float)(t2 - t1).TotalMilliseconds;
+					Time.Elapsed = t2 - t1;
+					float elapsed = (float)Time.Elapsed.TotalMilliseconds;
 					t1 = t2;
 
 					if (frameTimer != null && !frameTimer.Tick())
@@ -334,22 +334,29 @@ namespace PixelEngine
 
 		#region Math
 		protected const float PI = (float)Math.PI;
-		protected const float TwoPI = PI * 2;
 
 		protected static float Sin(float val) => (float)Math.Sin(val);
 		protected static float Cos(float val) => (float)Math.Cos(val);
 		protected static float Tan(float val) => (float)Math.Tan(val);
-				   
+
 		protected static float Power(float val, float pow) => (float)Math.Pow(val, pow);
 		protected static float Round(float val, int digits = 0) => (float)Math.Round(val, digits);
-				   
+
 		protected static float Map(float val, float oMin, float oMax, float nMin, float nMax) => (val - oMin) / (oMax - oMin) * (nMax - nMin) + nMin;
 		protected static float Constrain(float val, float min, float max) => Math.Max(Math.Min(max, val), min);
 		protected static float Lerp(float start, float end, float amt) => Map(amt, 0, 1, start, end);
+		protected static float Wrap(float val, float min, float max)
+		{
+			if (val > max)
+				return min;
+			if (val < min)
+				return max;
+			return val;
+		}
 		protected static float Distance(float x1, float y1, float x2, float y2) => Power(Power(x2 - x1, 2) + Power(y2 - y1, 2), 1 / 2);
 		protected static float Magnitude(float x, float y) => Power(Power(x, 2) + Power(y, 2), 1 / 2);
 		protected static bool Between(float val, float min, float max) => val > min && val < max;
-				   
+
 		protected static void Seed() => Randoms.Seed = Environment.TickCount % int.MaxValue;
 		protected static void Seed(int s) => Randoms.Seed = s;
 		protected static int Random(int max) => Random(0, max);
@@ -360,7 +367,7 @@ namespace PixelEngine
 		protected static T Random<T>(params T[] list) => list[Random(list.Length)];
 		protected static T Random<T>(List<T> list) => list[Random(list.Count)];
 		protected static T Random<T>(IEnumerable<T> list) => Random(list.ToArray());
-				   
+
 		protected static float Degrees(float radians) => (float)(radians * 180 / Math.PI);
 		protected static float Radians(float degrees) => (float)(degrees * Math.PI / 180);
 		#endregion
@@ -373,7 +380,7 @@ namespace PixelEngine
 			return copy;
 		}
 		protected static List<T> CopyList<T>(List<T> items) => new List<T>(items);
-				   
+
 		protected static T[] MakeArray<T>(params T[] items) => items;
 		protected static T[] MakeArray<T>(int count, Func<int, T> selector)
 		{
@@ -382,7 +389,7 @@ namespace PixelEngine
 				arr[i] = selector(i);
 			return arr;
 		}
-				   
+
 		protected static List<T> MakeList<T>(params T[] items) => items.ToList();
 		protected static List<T> MakeList<T>(int count, Func<int, T> selector)
 		{
@@ -391,7 +398,7 @@ namespace PixelEngine
 				list[i] = selector(i);
 			return list;
 		}
-				   
+
 		protected static Dictionary<T, U> MakeDict<T, U>(List<T> keys, List<U> values)
 		{
 			if (keys.Count != values.Count)
@@ -978,7 +985,7 @@ namespace PixelEngine
 
 				case Subsystem.HrText:
 					hrText = true;
-					textTarget = new Sprite(windowWidth, windowHeight);
+					textTarget = new Sprite(0, 0);
 					break;
 			}
 		}
@@ -1034,11 +1041,41 @@ namespace PixelEngine
 		}
 		public void DrawTextHr(Point p, string text, Pixel col, int scale = 1)
 		{
+			const int TargetSizeStep = 25;
+
 			if (!hrText || string.IsNullOrWhiteSpace(text))
 				return;
 
 			void SetPixel(int i, int j)
 			{
+				if (i > textTarget.Width && i < windowWidth)
+				{
+					Sprite temp = new Sprite(Math.Min(textTarget.Width + TargetSizeStep, windowWidth), textTarget.Height);
+
+					for (int y = 0; y < textTarget.Height; y++)
+					{
+						int index = y * textTarget.Width;
+						int indexTemp = y * temp.Width;
+						Array.Copy(textTarget.GetData(), index, temp.GetData(), indexTemp, textTarget.Width);
+					}
+
+					textTarget = temp;
+				}
+
+				if (j > textTarget.Height && j < windowHeight)
+				{
+					Sprite temp = new Sprite(textTarget.Width, Math.Min(textTarget.Height + TargetSizeStep, windowHeight));
+
+					for (int y = 0; y < textTarget.Height; y++)
+					{
+						int index = y * textTarget.Width;
+						int indexTemp = y * temp.Width;
+						Array.Copy(textTarget.GetData(), index, temp.GetData(), indexTemp, textTarget.Width);
+					}
+
+					textTarget = temp;
+				}
+			
 				switch (PixelMode)
 				{
 					case Pixel.Mode.Normal:

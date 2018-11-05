@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using static PixelEngine.Windows;
 
 namespace PixelEngine
@@ -11,8 +13,8 @@ namespace PixelEngine
 		private IntPtr deviceContext;
 		private IntPtr renderContext;
 
-		private float sw,sh;
-		private float pw,ph;
+		private float sw, sh;
+		private float pw, ph;
 		private float ww, wh;
 
 		public void Create(Game game)
@@ -47,97 +49,133 @@ namespace PixelEngine
 			GlTexEnvf((uint)GL.TextureEnv, (uint)GL.TextureEnvMode, (float)GL.Decal);
 		}
 
-		private delegate bool SwapInterval(int interval);
-
 		public unsafe void Initialize(Sprite drawTarget, Sprite textTarget)
 		{
-			fixed (Pixel* ptr = drawTarget.GetData())
-				GlTexImage2D((uint)GL.Texture2D, 0, (uint)GL.RGBA,
-					game.ScreenWidth, game.ScreenHeight,
-					0, (uint)GL.RGBA, (uint)GL.UnsignedByte, ptr);
+			GlTexImage2D((uint)GL.Texture2D, 0, (uint)GL.RGBA,
+				game.ScreenWidth, game.ScreenHeight,
+				0, (uint)GL.RGBA, (uint)GL.UnsignedByte, null);
 
 			IntPtr proc = WglGetProcAddress("wglSwapIntervalEXT");
 			SwapInterval si = Marshal.GetDelegateForFunctionPointer<SwapInterval>(proc);
-			si(0);
+			si?.Invoke(0);
 
 			sw = 1f / game.ScreenWidth;
 			sh = 1f / game.ScreenHeight;
+
 			pw = game.PixWidth * sw;
 			ph = game.PixHeight * sh;
+
 			ww = 1f / game.windowWidth;
 			wh = 1f / game.windowHeight;
 		}
 
 		public void Draw(Sprite drawTarget, Sprite textTarget)
 		{
-			void MakeQuad(Pixel p, float nx, float ny, float ex, float ey)
-			{
-				GlColor4ub(p.R, p.G, p.B, p.A);
-				GlVertex2f(nx, -ny);
-				GlVertex2f(nx, -ey);
-				GlVertex2f(ex, -ey);
-				GlVertex2f(ex, -ny);
-			}
-
-			GlBegin((uint)GL.Quads);
-			for (int i = 0; i < drawTarget.Width; i++)
-			{
-				for (int j = 0; j < drawTarget.Height; j++)
-				{
-					Pixel p = drawTarget[i, j];
-
-					if (p != Pixel.Empty)
-					{
-						float nx = i * sw;
-						float ny = j * sh;
-						float ex = nx + pw;
-						float ey = ny + ph;
-
-						nx = nx * 2 - 1;
-						ny = ny * 2 - 1;
-						ex = ex * 2 - 1;
-						ey = ey * 2 - 1;
-
-						MakeQuad(p, nx, ny, ex, ey);
-					}
-				}
-			}
-			GlEnd();
-
-			if (textTarget != null)
-			{
-				GlBegin((uint)GL.Points);
-				for (int i = 0; i < textTarget.Width; i++)
-				{
-					for (int j = 0; j < textTarget.Height; j++)
-					{
-						Pixel p = textTarget[i, j];
-
-						if (p != Pixel.Empty)
-						{
-							float nx = i * ww;
-							float ny = j * wh;
-
-							nx = nx * 2 - 1;
-							ny = ny * 2 - 1;
-
-							GlPushMatrix();
-							GlColor4ub(p.R, p.G, p.B, p.A);
-							GlVertex2f(nx, -ny);
-							GlPopMatrix();
-						}
-					}
-				}
-				GlEnd();
-			}
+			RenderPixels(drawTarget);
+			RenderText(textTarget);
 
 			SwapBuffers(deviceContext);
 		}
 
-		public void Clear()
+		private void RenderPixels(Sprite drawTarget)
 		{
-			GlClearColor(0, 0, 0, 1);
-			GlClear((uint)GL.ColorBufferBit | (uint)GL.DepthBufferBit);
+			if (game.PixWidth == 1 && game.PixHeight == 1)
+			{
+				float nx = 0;
+				float ny = 0;
+
+				GlBegin((uint)GL.Points);
+				for (int i = 0; i < drawTarget.Width; i++)
+				{
+					nx += sw;
+					ny = 0;
+
+					float px = nx * 2 - 1;
+
+					for (int j = 0; j < drawTarget.Height; j++)
+					{
+						Pixel p = drawTarget[i, j];
+
+						ny += sh;
+
+						float py = ny * 2 - 1;
+
+						GlColor3ub(p.R, p.G, p.B);
+						GlVertex2f(px, -py);
+					}
+				}
+				GlEnd();
+			}
+			else
+			{
+				float x1 = -sw;
+				float x2 = 0;
+
+				GlBegin((uint)GL.Quads);
+				for (int i = 0; i < drawTarget.Width; i++)
+				{
+					x1 += sw;
+					x2 += sw;
+
+					float nx1 = x1 * 2 - 1;
+					float nx2 = x2 * 2 - 1;
+
+					float y1 = -sh;
+					float y2 = 0;
+
+					for (int j = 0; j < drawTarget.Height; j++)
+					{
+						Pixel p = drawTarget[i, j];
+
+						y1 += sh;
+						y2 += sh;
+
+						float ny1 = y1 * 2 - 1;
+						float ny2 = y2 * 2 - 1;
+
+						GlColor3ub(p.R, p.G, p.B);
+
+						GlVertex2f(nx1, -ny1);
+						GlVertex2f(nx1, -ny2);
+						GlVertex2f(nx2, -ny2);
+						GlVertex2f(nx2, -ny1);
+					}
+				}
+				GlEnd();
+			}
+		}
+
+		private void RenderText(Sprite textTarget)
+		{
+			if (textTarget == null)
+				return;
+
+			GlBegin((uint)GL.Points);
+
+			float nx = 0;
+			float ny = 0;
+
+			for (int i = 0; i < textTarget.Width; i++)
+			{
+				nx += ww;
+				ny = 0;
+				float kx = nx * 2 - 1;
+
+				for (int j = 0; j < textTarget.Height; j++)
+				{
+					ny += wh;
+					float ky = ny * 2 - 1;
+
+					Pixel p = textTarget[i, j];
+
+					if (p == Pixel.Empty)
+						continue;
+
+					GlColor3ub(p.R, p.G, p.B);
+					GlVertex2f(kx, -(ky));
+				}
+			}
+			GlEnd();
 		}
 
 		public void Destroy()
