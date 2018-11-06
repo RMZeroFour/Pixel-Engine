@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Security;
-using System.Text;
 
 namespace PixelEngine
 {
-	[SuppressUnmanagedCodeSecurity]
 	internal static unsafe class Windows
 	{
+		static Windows() => DllHelper.LoadDll();
+
 		#region Constants
 		public const int DoubleClicks = 0x8;
 		public const int VRedraw = 0x1;
@@ -37,6 +36,7 @@ namespace PixelEngine
 		private const string OpenGl = "opengl32.dll";
 		private const string Gdi = "gdi32.dll";
 		private const string Winmm = "winmm.dll";
+		private const string PixGl = "PixGL.dll";
 		#endregion
 
 		#region Enums
@@ -628,6 +628,9 @@ namespace PixelEngine
 		#region Kernel
 		[DllImport(Kernel, CharSet = CharSet.Auto)]
 		public static extern IntPtr GetModuleHandle(string lpModuleName);
+
+		[DllImport(Kernel, CharSet = CharSet.Auto)]
+		public static extern IntPtr LoadLibrary(string lpLibraryName);
 		#endregion
 
 		#region Winmm
@@ -642,6 +645,23 @@ namespace PixelEngine
 
 		[DllImport(Winmm, EntryPoint = "waveOutWrite")]
 		public static extern int WaveOutWrite(IntPtr hWaveOut, ref WaveHdr lpWaveOutHdr, int uSize);
+		#endregion
+
+		#region PixGL
+		[DllImport(PixGl, CallingConvention = CallingConvention.Cdecl)]
+		public static extern void SetValues(float pw, float ph, float sw, float sh, float ww, float wh);
+
+		[DllImport(PixGl, CallingConvention = CallingConvention.Cdecl)]
+		public unsafe static extern void RenderUnitPixels(int width, int height, Pixel* pixels);
+
+		[DllImport(PixGl, CallingConvention = CallingConvention.Cdecl)]
+		public unsafe static extern void RenderPixels(int width, int height, int pixW, int pixH, Pixel* pixels);
+
+		[DllImport(PixGl, CallingConvention = CallingConvention.Cdecl)]
+		public unsafe static extern void RenderText(int width, int height, Pixel* pixels);
+
+		[DllImport(PixGl, CallingConvention = CallingConvention.Cdecl)]
+		public unsafe static extern void MakeRect(Pixel* p);
 		#endregion
 
 		#region OpenGL
