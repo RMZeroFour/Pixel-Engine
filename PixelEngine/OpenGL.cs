@@ -67,115 +67,24 @@ namespace PixelEngine
 
 			ww = 1f / game.windowWidth;
 			wh = 1f / game.windowHeight;
+
+			SetValues(pw, ph, sw, sh, ww, wh);
 		}
 
-		public void Draw(Sprite drawTarget, Sprite textTarget)
-		{
-			RenderPixels(drawTarget);
-			RenderText(textTarget);
-
-			SwapBuffers(deviceContext);
-		}
-
-		private void RenderPixels(Sprite drawTarget)
+		public unsafe void Draw(Sprite drawTarget, Sprite textTarget)
 		{
 			if (game.PixWidth == 1 && game.PixHeight == 1)
-			{
-				float nx = 0;
-				float ny = 0;
-
-				GlBegin((uint)GL.Points);
-				for (int i = 0; i < drawTarget.Width; i++)
-				{
-					nx += sw;
-					ny = 0;
-
-					float px = nx * 2 - 1;
-
-					for (int j = 0; j < drawTarget.Height; j++)
-					{
-						Pixel p = drawTarget[i, j];
-
-						ny += sh;
-
-						float py = ny * 2 - 1;
-
-						GlColor3ub(p.R, p.G, p.B);
-						GlVertex2f(px, -py);
-					}
-				}
-				GlEnd();
-			}
+				fixed (Pixel* ptr = drawTarget.GetData())
+					RenderUnitPixels(drawTarget.Width, drawTarget.Height, ptr);
 			else
-			{
-				float x1 = -sw;
-				float x2 = 0;
+				fixed (Pixel* ptr = drawTarget.GetData())
+					RenderPixels(drawTarget.Width, drawTarget.Height, game.PixWidth, game.PixHeight, ptr);
 
-				GlBegin((uint)GL.Quads);
-				for (int i = 0; i < drawTarget.Width; i++)
-				{
-					x1 += sw;
-					x2 += sw;
+			if (textTarget != null)
+				fixed (Pixel* ptr = textTarget.GetData())
+					RenderText(textTarget.Width, textTarget.Height, ptr);
 
-					float nx1 = x1 * 2 - 1;
-					float nx2 = x2 * 2 - 1;
-
-					float y1 = -sh;
-					float y2 = 0;
-
-					for (int j = 0; j < drawTarget.Height; j++)
-					{
-						Pixel p = drawTarget[i, j];
-
-						y1 += sh;
-						y2 += sh;
-
-						float ny1 = y1 * 2 - 1;
-						float ny2 = y2 * 2 - 1;
-
-						GlColor3ub(p.R, p.G, p.B);
-
-						GlVertex2f(nx1, -ny1);
-						GlVertex2f(nx1, -ny2);
-						GlVertex2f(nx2, -ny2);
-						GlVertex2f(nx2, -ny1);
-					}
-				}
-				GlEnd();
-			}
-		}
-
-		private void RenderText(Sprite textTarget)
-		{
-			if (textTarget == null)
-				return;
-
-			GlBegin((uint)GL.Points);
-
-			float nx = 0;
-			float ny = 0;
-
-			for (int i = 0; i < textTarget.Width; i++)
-			{
-				nx += ww;
-				ny = 0;
-				float kx = nx * 2 - 1;
-
-				for (int j = 0; j < textTarget.Height; j++)
-				{
-					ny += wh;
-					float ky = ny * 2 - 1;
-
-					Pixel p = textTarget[i, j];
-
-					if (p == Pixel.Empty)
-						continue;
-
-					GlColor3ub(p.R, p.G, p.B);
-					GlVertex2f(kx, -(ky));
-				}
-			}
-			GlEnd();
+			SwapBuffers(deviceContext);
 		}
 
 		public void Destroy()

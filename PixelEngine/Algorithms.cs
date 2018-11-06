@@ -126,6 +126,7 @@ namespace PixelEngine
 			}
 		}
 
+		public static T Search<T>(this IEnumerable<T> items, T item) => Search(items, (t, i) => t.Equals(item));
 		public static T Search<T>(this IEnumerable<T> items, Func<T, bool> condition) => Search(items, (t, i) => condition(t));
 		public static T Search<T>(this IEnumerable<T> items, Func<T, int, bool> condition)
 		{

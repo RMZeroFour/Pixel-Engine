@@ -42,6 +42,7 @@
     <Compile Include="Algorithms.cs" />
     <Compile Include="Button.cs" />
     <Compile Include="Display.cs" />
+    <Compile Include="DllHelper.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="Noise.cs" />
@@ -65,6 +66,9 @@
     <Reference Include="System.Drawing">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6.1\System.Drawing.dll</HintPath>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\PixGL.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
