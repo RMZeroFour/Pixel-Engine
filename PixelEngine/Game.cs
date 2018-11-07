@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
-
+using PixelEngine.Utilities;
 using static PixelEngine.Windows;
 
 namespace PixelEngine
@@ -20,7 +20,7 @@ namespace PixelEngine
 		protected int MouseX { get; private set; }
 		protected int MouseY { get; private set; }
 		protected int MouseScroll { get; private set; }
-		protected Time Time { get; private set; }
+		protected Clock Clock { get; private set; }
 		protected float Volume
 		{
 			get
@@ -31,6 +31,15 @@ namespace PixelEngine
 			{
 				if (audio != null)
 					audio.Volume = Constrain(value, 0, 1);
+			}
+		}
+		public float AudioTime
+		{
+			get
+			{
+				if (audio == null)
+					return 0;
+				return audio.GlobalTime;
 			}
 		}
 		protected Sprite DrawTarget
@@ -117,7 +126,7 @@ namespace PixelEngine
 		}
 		private void GameLoop()
 		{
-			Time = new Time();
+			Clock = new Clock();
 
 			OnCreate();
 
@@ -136,8 +145,8 @@ namespace PixelEngine
 				while (active)
 				{
 					t2 = DateTime.Now;
-					Time.Elapsed = t2 - t1;
-					float elapsed = (float)Time.Elapsed.TotalMilliseconds;
+					Clock.Elapsed = t2 - t1;
+					float elapsed = (float)Clock.Elapsed.TotalMilliseconds;
 					t1 = t2;
 
 					if (frameTimer != null && !frameTimer.Tick())
@@ -543,14 +552,6 @@ namespace PixelEngine
 			mapKeys[0x30] = Key.K0; mapKeys[0x31] = Key.K1; mapKeys[0x32] = Key.K2; mapKeys[0x33] = Key.K3; mapKeys[0x34] = Key.K4;
 			mapKeys[0x35] = Key.K5; mapKeys[0x36] = Key.K6; mapKeys[0x37] = Key.K7; mapKeys[0x38] = Key.K8; mapKeys[0x39] = Key.K9;
 		}
-		private int Clip(int val, int min, int max)
-		{
-			if (val < min)
-				val = min;
-			if (val > max)
-				val = max;
-			return val;
-		}
 		private uint LoWord(uint val) => val & 0xFFFF;
 		private uint HiWord(uint val) => val >> 16;
 		private short MouseWheelDelta(int wParam) => (short)(wParam >> 16);
@@ -712,6 +713,15 @@ namespace PixelEngine
 		}
 		public void FillRect(Point p, int w, int h, Pixel col)
 		{
+			int Clip(int val, int min, int max)
+			{
+				if (val < min)
+					val = min;
+				if (val > max)
+					val = max;
+				return val;
+			}
+
 			int x2 = p.X + w;
 			int y2 = p.Y + h;
 

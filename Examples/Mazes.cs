@@ -41,7 +41,9 @@ namespace Examples
 
 		private Stack<Point> pointStack = new Stack<Point>();
 
-		public override void OnCreate()
+		public override void OnCreate() => Reset();
+
+		private void Reset()
 		{
 			maze = new Cells[MazeWidth * MazeHeight];
 
@@ -53,6 +55,12 @@ namespace Examples
 			maze[y * MazeWidth + x] = Cells.Visited;
 
 			visited = 1;
+		}
+
+		public override void OnKeyPress(Key k)
+		{
+			if (k == Key.R)
+				Reset();
 		}
 
 		public override void OnUpdate(float elapsed)
@@ -80,8 +88,8 @@ namespace Examples
 
 				if (neighbours.Count > 0)
 				{
-		
-			Cells nextDir = neighbours[Random(neighbours.Count)];
+
+					Cells nextDir = neighbours[Random(neighbours.Count)];
 
 					switch (nextDir)
 					{
@@ -89,7 +97,7 @@ namespace Examples
 							maze[GetOffsetCellIndex(0, -1)] |= Cells.Visited | Cells.PathSouth;
 							maze[GetOffsetCellIndex(0, 0)] |= Cells.PathNorth;
 							pointStack.Push(new Point(current.X, current.Y - 1));
-						break;
+							break;
 						case Cells.PathEast:
 							maze[GetOffsetCellIndex(1, 0)] |= Cells.Visited | Cells.PathWest;
 							maze[GetOffsetCellIndex(0, 0)] |= Cells.PathEast;

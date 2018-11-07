@@ -13,7 +13,7 @@ namespace Examples
 		}
 
 		// Uncomment to make fullscreen
-		public override void OnCreate() => Enable(Subsystem.Fullscreen);
+		//public override void OnCreate() => Enable(Subsystem.Fullscreen);
 
 		public override void OnUpdate(float elapsed)
 		{

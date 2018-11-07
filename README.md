@@ -51,7 +51,7 @@ namespace Examples
 
 ## Prerequisites
 
-There are no additional dependencies outside the Windows Api, which is present in all windows installations.
+There are no additional dependencies outside the Windows Api, which is present in all windows installations, and some basic .Net Framework libraries which are present with all C# installations.
 
 ## Examples
 

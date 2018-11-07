@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace PixelEngine
+namespace PixelEngine.Utilities
 {
-	public class Time
+	public class Clock
 	{
-		internal Time() => Start = DateTime.Now;
+		internal Clock() => Start = DateTime.Now;
 
 		public DateTime Start { get; internal set; }
 		public TimeSpan Total => DateTime.Now - Start;

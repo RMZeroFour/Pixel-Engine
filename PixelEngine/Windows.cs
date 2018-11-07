@@ -545,7 +545,7 @@ namespace PixelEngine
 
 		#region Delegates
 		public delegate void WaveDelegate(IntPtr hdrvr, int uMsg, int dwUser, ref WaveHdr wavhdr, int dwParam2);
-
+		public delegate IntPtr WindowProcess(IntPtr handle, uint msg, int wParam, int lParam);
 		public delegate bool SwapInterval(int interval);
 		#endregion
 
@@ -659,9 +659,6 @@ namespace PixelEngine
 
 		[DllImport(PixGl, CallingConvention = CallingConvention.Cdecl)]
 		public unsafe static extern void RenderText(int width, int height, Pixel* pixels);
-
-		[DllImport(PixGl, CallingConvention = CallingConvention.Cdecl)]
-		public unsafe static extern void MakeRect(Pixel* p);
 		#endregion
 
 		#region OpenGL

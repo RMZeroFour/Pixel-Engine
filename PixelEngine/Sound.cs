@@ -125,6 +125,8 @@ namespace PixelEngine
 
 		public bool Active { get; private set; }
 
+		public float GlobalTime { get; private set; }
+
 		internal float Volume = 1;
 
 		private List<Sound> samples;
@@ -143,9 +145,8 @@ namespace PixelEngine
 		private IntPtr device = IntPtr.Zero;
 		private Thread audioThread;
 		private uint blockFree = 0;
-		private float globalTime = 0.0f;
 
-		private static readonly int soundInterval = 10;
+		private const int SoundInterval = 10;
 
 		public Sound LoadSound(string file)
 		{
@@ -261,7 +262,6 @@ namespace PixelEngine
 		{
 			float mixerSample = 0.0f;
 
-			
 			if (playingSamples != null)
 			{
 				for (int i = 0; i < playingSamples.Count; i++)
@@ -270,12 +270,9 @@ namespace PixelEngine
 
 					ps.SamplePosition += (long)(ps.AudioSample.WavHeader.SamplesPerSec * timeStep);
 
-					if (Volume > 0)
-					{
-						if (ps.SamplePosition < ps.AudioSample.SampleCount)
+					if (ps.SamplePosition < ps.AudioSample.SampleCount)
+						if (Volume > 0)
 							mixerSample += ps.AudioSample.Samples[(ps.SamplePosition * ps.AudioSample.Channels) + channel];
-					}
-					
 					else if (ps.Loop)
 						ps.SamplePosition = 0;
 					else
@@ -285,7 +282,6 @@ namespace PixelEngine
 				
 					playingSamples.RemoveAll(s => s.Finished);
 				}
-
 			}
 
 			mixerSample += OnSoundCreate(channel, globalTime, timeStep);
@@ -306,21 +302,18 @@ namespace PixelEngine
 
 			int whdrSize = Marshal.SizeOf(waveHeaders[blockCurrent]);
 
-			globalTime = 0.0f;
+			GlobalTime = 0.0f;
 			float timeStep = 1.0f / sampleRate;
 
 			float maxSample = (float)(Math.Pow(2, (sizeof(short) * 8) - 1) - 1);
 
 			while (Active)
 			{
-				Thread.Sleep(soundInterval);
+				Thread.Sleep(SoundInterval);
 
 				while (blockFree == 0) ;
 
 				blockFree--;
-
-				if ((waveHeaders[blockCurrent].Flags & WHdrPrepared) != 0)
-					WaveOutUnprepareHeader(device, ref waveHeaders[blockCurrent], whdrSize);
 
 				short newSample = 0;
 				int currentBlock = (int)(blockCurrent * blockSamples);
@@ -329,12 +322,15 @@ namespace PixelEngine
 				{
 					for (int c = 0; c < channels; c++)
 					{
-						newSample = (short)(Clip(GetMixerOutput(c, globalTime, timeStep), 1.0f) * maxSample);
+						newSample = (short)(Clip(GetMixerOutput(c, GlobalTime, timeStep), 1.0f) * maxSample);
 						blockMemory[currentBlock + n + c] = newSample;
 					}
 
-					globalTime += timeStep;
+					GlobalTime += timeStep;
 				}
+
+				if ((waveHeaders[blockCurrent].Flags & WHdrPrepared) != 0)
+					WaveOutUnprepareHeader(device, ref waveHeaders[blockCurrent], whdrSize);
 
 				WaveOutPrepareHeader(device, ref waveHeaders[blockCurrent], whdrSize);
 				WaveOutWrite(device, ref waveHeaders[blockCurrent], whdrSize);

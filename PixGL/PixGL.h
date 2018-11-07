@@ -1,19 +1,16 @@
-#include <iostream>
 #include <windows.h>
-#include <gdiplus.h>
 #include <GL/GL.h>
+#include <mmsystem.h>
 
 #define PixGL _declspec(dllexport)
 
 extern "C"
 {
 	float pw, ph, sw, sh, ww, wh;
-
-	HDC devContext;
-
+	
 	struct Pixel
 	{
-		byte r, g, b, a;
+		unsigned char r, g, b, a;
 	};
 
 	PixGL void SetValues(float pw_, float ph_, float sw_, float sh_, float ww_, float wh_);

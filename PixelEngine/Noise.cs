@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PixelEngine
+namespace PixelEngine.Utilities
 {
 	public static class Noise
 	{

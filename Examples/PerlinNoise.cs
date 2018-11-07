@@ -1,5 +1,6 @@
 using System;
 using PixelEngine;
+using PixelEngine.Utilities;
 
 namespace Examples
 {
@@ -8,8 +9,10 @@ namespace Examples
 		// Store a map sprite to render offscreen
 		private Sprite map;
 
-		// Change the hue
-		private float hueDivisor = 1;
+		// Parameters for color
+		private float hue = 1;
+		private float saturation = 1;
+		private float value = 1;
 
 		// Set the title
 		public PerlinNoise() => AppName = "Perlin Noise";
@@ -28,14 +31,36 @@ namespace Examples
 			// Calculate noise
 			RecalculateMap();
 		}
-		
+
 		public override void OnUpdate(float elapsed)
 		{
 			// Adjust hue divisor based on input
-			if (GetKey(Key.Up).Down)
-				hueDivisor += 0.1f;
-			if (GetKey(Key.Down).Down)
-				hueDivisor -= 0.1f;
+			if (GetKey(Key.Q).Down)
+				hue += 0.1f * elapsed / 100;
+			if (GetKey(Key.A).Down)
+				hue -= 0.1f * elapsed / 100;
+
+			if (GetKey(Key.W).Down)
+				saturation += 0.1f * elapsed / 100;
+			if (GetKey(Key.S).Down)
+				saturation -= 0.1f * elapsed / 100;
+
+			if (GetKey(Key.E).Down)
+				value += 0.1f * elapsed / 100;
+			if (GetKey(Key.D).Down)
+				value -= 0.1f * elapsed / 100;
+
+			hue = Round(hue, 1);
+			if (hue <= 0)
+				hue = 0.1f;
+
+			saturation = Round(saturation, 1);
+			if (saturation <= 0)
+				saturation = 0.1f;
+
+			value = Round(value, 1);
+			if (value <= 0)
+				value = 0.1f;
 
 			// Prepare a new map
 			if (GetKey(Key.Enter).Pressed)
@@ -45,16 +70,15 @@ namespace Examples
 				RecalculateMap();
 			}
 
-			// Round and clamp hueDivisor
-			hueDivisor = Round(hueDivisor, 1);
-			hueDivisor = hueDivisor > 0 ? hueDivisor : 0.1f;
-			
 			// Reset draw target
 			DrawTarget = null;
 			// Draw the map
 			DrawSprite(new Point(0, 0), map);
-			// Inform user of Hue Mode
-			DrawText(new Point(0, 0), "Hue Mode: " + hueDivisor, Pixel.Presets.Black);
+
+			// Inform user of Parameters
+			DrawText(new Point(0, 0), "Hue: " + hue, Pixel.Presets.Black);
+			DrawText(new Point(0, 10), "Saturation: " + saturation, Pixel.Presets.Black);
+			DrawText(new Point(0, 20), "Value: " + value, Pixel.Presets.Black);
 		}
 
 		// Prepare a map
@@ -62,7 +86,7 @@ namespace Examples
 		{
 			// Switch to the map to draw
 			DrawTarget = map;
-			
+
 			for (int i = 0; i < ScreenWidth; i++)
 			{
 				for (int j = 0; j < ScreenHeight; j++)
@@ -73,7 +97,7 @@ namespace Examples
 					float f = Map(noise, -1, 1, 0, 255);
 					// Convert hue to rgb
 					// Divide by hueDivisor to get different hues
-					Pixel p = HSVToRGB(f / hueDivisor, 1, 1);
+					Pixel p = HSVToRGB(f * hue, saturation, value);
 					// Draw the pixel
 					Draw(i, j, p);
 				}

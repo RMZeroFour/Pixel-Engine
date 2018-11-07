@@ -5,8 +5,6 @@ using static PixelEngine.Windows;
 
 namespace PixelEngine
 {
-	public delegate IntPtr WindowProcess(IntPtr handle, uint msg, int wParam, int lParam);
-
 	public class Display
 	{
 		private WindowProcess proc;
