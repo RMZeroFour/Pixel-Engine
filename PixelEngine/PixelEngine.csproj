@@ -39,23 +39,23 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Algorithms.cs" />
+    <Compile Include="Utilities\Algorithms.cs" />
     <Compile Include="Button.cs" />
     <Compile Include="Display.cs" />
     <Compile Include="DllHelper.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Game.cs" />
-    <Compile Include="Noise.cs" />
+    <Compile Include="Utilities\Noise.cs" />
     <Compile Include="OpenGL.cs" />
-    <Compile Include="Pattern.cs" />
+    <Compile Include="Utilities\Pattern.cs" />
     <Compile Include="Pixel.cs" />
     <Compile Include="Point.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Randoms.cs" />
     <Compile Include="Sound.cs" />
     <Compile Include="Sprite.cs" />
-    <Compile Include="States.cs" />
-    <Compile Include="Clock.cs" />
+    <Compile Include="Utilities\States.cs" />
+    <Compile Include="Utilities\Clock.cs" />
     <Compile Include="Timer.cs" />
     <Compile Include="Windows.cs" />
   </ItemGroup>

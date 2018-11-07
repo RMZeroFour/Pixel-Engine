@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using PixelEngine.Utilities;
 using static PixelEngine.Windows;
 
@@ -146,7 +147,7 @@ namespace PixelEngine
 				{
 					t2 = DateTime.Now;
 					Clock.Elapsed = t2 - t1;
-					float elapsed = (float)Clock.Elapsed.TotalMilliseconds;
+					float elapsed = (float)Clock.Elapsed.TotalSeconds;
 					t1 = t2;
 
 					if (frameTimer != null && !frameTimer.Tick())
@@ -306,7 +307,7 @@ namespace PixelEngine
 					OnMouseRelease(Mouse.Middle);
 					break;
 				case (uint)WM.CLOSE:
-					active = false;
+					Finish();
 					break;
 				case (uint)WM.DESTROY:
 					PostQuitMessage(0);
@@ -342,56 +343,49 @@ namespace PixelEngine
 		#endregion
 
 		#region Math
-		protected const float PI = (float)Math.PI;
+		protected static readonly float PI = (float)Math.PI;
 
-		protected static float Sin(float val) => (float)Math.Sin(val);
-		protected static float Cos(float val) => (float)Math.Cos(val);
-		protected static float Tan(float val) => (float)Math.Tan(val);
+		protected float Sin(float val) => (float)Math.Sin(val);
+		protected float Cos(float val) => (float)Math.Cos(val);
+		protected float Tan(float val) => (float)Math.Tan(val);
 
-		protected static float Power(float val, float pow) => (float)Math.Pow(val, pow);
-		protected static float Round(float val, int digits = 0) => (float)Math.Round(val, digits);
+		protected float Power(float val, float pow) => (float)Math.Pow(val, pow);
+		protected float Round(float val, int digits = 0) => (float)Math.Round(val, digits);
 
-		protected static float Map(float val, float oMin, float oMax, float nMin, float nMax) => (val - oMin) / (oMax - oMin) * (nMax - nMin) + nMin;
-		protected static float Constrain(float val, float min, float max) => Math.Max(Math.Min(max, val), min);
-		protected static float Lerp(float start, float end, float amt) => Map(amt, 0, 1, start, end);
-		protected static float Wrap(float val, float min, float max)
+		protected float Map(float val, float oMin, float oMax, float nMin, float nMax) => (val - oMin) / (oMax - oMin) * (nMax - nMin) + nMin;
+		protected float Constrain(float val, float min, float max) => Math.Max(Math.Min(max, val), min);
+		protected float Lerp(float start, float end, float amt) => Map(amt, 0, 1, start, end);
+		protected float Wrap(float val, float min, float max)
 		{
 			if (val > max)
-				return min;
+				return val - min;
 			if (val < min)
-				return max;
+				return val - max;
 			return val;
 		}
-		protected static float Distance(float x1, float y1, float x2, float y2) => Power(Power(x2 - x1, 2) + Power(y2 - y1, 2), 1 / 2);
-		protected static float Magnitude(float x, float y) => Power(Power(x, 2) + Power(y, 2), 1 / 2);
-		protected static bool Between(float val, float min, float max) => val > min && val < max;
+		protected float Distance(float x1, float y1, float x2, float y2) => Power(Power(x2 - x1, 2) + Power(y2 - y1, 2), 1 / 2);
+		protected float Magnitude(float x, float y) => Power(Power(x, 2) + Power(y, 2), 1 / 2);
+		protected bool Between(float val, float min, float max) => val > min && val < max;
 
-		protected static void Seed() => Randoms.Seed = Environment.TickCount % int.MaxValue;
-		protected static void Seed(int s) => Randoms.Seed = s;
-		protected static int Random(int max) => Random(0, max);
-		protected static int Random(int min, int max) => Randoms.RandomInt(min, max);
-		protected static float Random() => Random(0f, 1f);
-		protected static float Random(float max) => Random(0, max);
-		protected static float Random(float min, float max) => Randoms.RandomFloat(min, max);
-		protected static T Random<T>(params T[] list) => list[Random(list.Length)];
-		protected static T Random<T>(List<T> list) => list[Random(list.Count)];
-		protected static T Random<T>(IEnumerable<T> list) => Random(list.ToArray());
+		protected void Seed() => Randoms.Seed = Environment.TickCount % int.MaxValue;
+		protected void Seed(int s) => Randoms.Seed = s;
+		protected int Random(int max) => Random(0, max);
+		protected int Random(int min, int max) => Randoms.RandomInt(min, max);
+		protected float Random() => Random(0f, 1f);
+		protected float Random(float max) => Random(0, max);
+		protected float Random(float min, float max) => Randoms.RandomFloat(min, max);
+		protected T Random<T>(params T[] list) => list[Random(list.Length)];
+		protected T Random<T>(List<T> list) => list[Random(list.Count)];
+		protected T Random<T>(IEnumerable<T> list) => Random(list.ToArray());
 
-		protected static float Degrees(float radians) => (float)(radians * 180 / Math.PI);
-		protected static float Radians(float degrees) => (float)(degrees * Math.PI / 180);
+		protected float Degrees(float radians) => (float)(radians * 180 / Math.PI);
+		protected float Radians(float degrees) => (float)(degrees * Math.PI / 180);
 		#endregion
 
 		#region Collections
-		protected static T[] CopyArray<T>(params T[] items)
-		{
-			T[] copy = new T[items.Length];
-			items.CopyTo(copy, 0);
-			return copy;
-		}
-		protected static List<T> CopyList<T>(List<T> items) => new List<T>(items);
-
-		protected static T[] MakeArray<T>(params T[] items) => items;
-		protected static T[] MakeArray<T>(int count, Func<int, T> selector)
+		protected T[] MakeArray<T>(params T[] items) => items;
+		protected T[] MakeArray<T>(IEnumerable<T> items) => items.ToArray();
+		protected T[] MakeArray<T>(int count, Func<int, T> selector)
 		{
 			T[] arr = new T[count];
 			for (int i = 0; i < count; i++)
@@ -399,16 +393,17 @@ namespace PixelEngine
 			return arr;
 		}
 
-		protected static List<T> MakeList<T>(params T[] items) => items.ToList();
-		protected static List<T> MakeList<T>(int count, Func<int, T> selector)
+		protected List<T> MakeList<T>(params T[] items) => items.ToList();
+		protected List<T> MakeList<T>(IEnumerable<T> items) => items.ToList();
+		protected List<T> MakeList<T>(int count, Func<int, T> selector)
 		{
 			List<T> list = new List<T>(count);
 			for (int i = 0; i < count; i++)
-				list[i] = selector(i);
+				list.Add(selector(i));
 			return list;
 		}
 
-		protected static Dictionary<T, U> MakeDict<T, U>(List<T> keys, List<U> values)
+		protected Dictionary<T, U> MakeDict<T, U>(List<T> keys, List<U> values)
 		{
 			if (keys.Count != values.Count)
 				return null;
@@ -418,7 +413,7 @@ namespace PixelEngine
 				dict.Add(keys[i], values[i]);
 			return dict;
 		}
-		protected static Dictionary<T, U> MakeDict<T, U>(T[] keys, U[] values)
+		protected Dictionary<T, U> MakeDict<T, U>(T[] keys, U[] values)
 		{
 			if (keys.Length != values.Length)
 				return null;
@@ -428,7 +423,8 @@ namespace PixelEngine
 				dict.Add(keys[i], values[i]);
 			return dict;
 		}
-		protected static Dictionary<T, U> MakeDict<T, U>(int count, Func<int, T> keySelector, Func<int, U> valSelector)
+		protected Dictionary<T, U> MakeDict<T, U>(IEnumerable<T> keys, IEnumerable<U> values) => MakeDict(keys.ToArray(), values.ToArray());
+		protected Dictionary<T, U> MakeDict<T, U>(int count, Func<int, T> keySelector, Func<int, U> valSelector)
 		{
 			Dictionary<T, U> dict = new Dictionary<T, U>(count);
 			for (int i = 0; i < count; i++)

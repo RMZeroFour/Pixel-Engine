@@ -1,13 +1,13 @@
+#include <iostream>
 #include <windows.h>
 #include <GL/GL.h>
-#include <mmsystem.h>
 
 #define PixGL _declspec(dllexport)
 
 extern "C"
 {
 	float pw, ph, sw, sh, ww, wh;
-	
+
 	struct Pixel
 	{
 		unsigned char r, g, b, a;

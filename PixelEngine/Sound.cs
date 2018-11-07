@@ -200,16 +200,6 @@ namespace PixelEngine
 			}
 		}
 
-		public void DestroyAudio() => Active = false;
-
-		private void WaveOutProc(IntPtr hWaveOut, int uMsg, int dwUser, ref WaveHdr wavhdr, int dwParam2)
-		{
-			if (uMsg != WomDone)
-				return;
-
-			blockFree++;
-		}
-
 		public void CreateAudio(uint sampleRate = 44100, uint channels = 1, uint blocks = 8, uint blockSamples = 512)
 		{
 			Active = false;
@@ -258,6 +248,16 @@ namespace PixelEngine
 			audioThread.Start();
 		}
 
+		public void DestroyAudio() => Active = false;
+
+		private void WaveOutProc(IntPtr hWaveOut, int uMsg, int dwUser, ref WaveHdr wavhdr, int dwParam2)
+		{
+			if (uMsg != WomDone)
+				return;
+
+			blockFree++;
+		}
+
 		private float GetMixerOutput(int channel, float globalTime, float timeStep)
 		{
 			float mixerSample = 0.0f;
@@ -286,18 +286,19 @@ namespace PixelEngine
 
 			mixerSample += OnSoundCreate(channel, globalTime, timeStep);
 			mixerSample = OnSoundFilter(channel, globalTime, mixerSample);
+			mixerSample *= Volume;
 
-			return mixerSample * Volume;
+			return mixerSample;
 		}
 
 		private void AudioThread()
 		{
-			float Clip(float fSample, float fMax)
+			float Clip(float sample, float max)
 			{
-				if (fSample >= 0.0)
-					return Math.Min(fSample, fMax);
+				if (sample >= 0)
+					return Math.Min(sample, max);
 				else
-					return Math.Max(fSample, -fMax);
+					return Math.Max(sample, -max);
 			}
 
 			int whdrSize = Marshal.SizeOf(waveHeaders[blockCurrent]);
@@ -309,14 +310,17 @@ namespace PixelEngine
 
 			while (Active)
 			{
-				Thread.Sleep(SoundInterval);
-
-				while (blockFree == 0) ;
+				if (blockFree == 0)
+					while (blockFree == 0)
+						Thread.Sleep(SoundInterval);
 
 				blockFree--;
 
 				short newSample = 0;
 				int currentBlock = (int)(blockCurrent * blockSamples);
+
+				if ((waveHeaders[blockCurrent].Flags & WHdrPrepared) != 0)
+					WaveOutUnprepareHeader(device, ref waveHeaders[blockCurrent], whdrSize);
 
 				for (uint n = 0; n < blockSamples; n += channels)
 				{
@@ -328,9 +332,6 @@ namespace PixelEngine
 
 					GlobalTime += timeStep;
 				}
-
-				if ((waveHeaders[blockCurrent].Flags & WHdrPrepared) != 0)
-					WaveOutUnprepareHeader(device, ref waveHeaders[blockCurrent], whdrSize);
 
 				WaveOutPrepareHeader(device, ref waveHeaders[blockCurrent], whdrSize);
 				WaveOutWrite(device, ref waveHeaders[blockCurrent], whdrSize);

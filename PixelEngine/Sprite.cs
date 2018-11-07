@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Collections.Generic;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 
@@ -48,26 +49,24 @@ namespace PixelEngine
 		{
 			Pixel Parse(short col)
 			{
-				Pixel color = Pixel.Empty;
-
 				switch (col & 0xF)
 				{
-					case 0x0: return Pixel.Presets.Black;       // FG_BLACK			
-					case 0x1: return Pixel.Presets.DarkBlue;    // FG_DARK_BLUE		
-					case 0x2: return Pixel.Presets.DarkGreen;   // FG_DARK_GREEN		
-					case 0x3: return Pixel.Presets.DarkCyan;    // FG_DARK_CYAN		
-					case 0x4: return Pixel.Presets.DarkRed;     // FG_DARK_RED		
-					case 0x5: return Pixel.Presets.DarkMagenta; // FG_DARK_MAGENTA	
-					case 0x6: return Pixel.Presets.DarkYellow;  // FG_DARK_YELLOW		
-					case 0x7: return Pixel.Presets.Grey;        // FG_GREY			
-					case 0x8: return Pixel.Presets.DarkGrey;    // FG_DARK_GREY		
-					case 0x9: return Pixel.Presets.Blue;        // FG_BLUE			
-					case 0xA: return Pixel.Presets.Green;       // FG_GREEN			
-					case 0xB: return Pixel.Presets.Cyan;        // FG_CYAN			
-					case 0xC: return Pixel.Presets.Red;         // FG_RED				
-					case 0xD: return Pixel.Presets.Magenta;     // FG_MAGENTA			
-					case 0xE: return Pixel.Presets.Yellow;      // FG_YELLOW			
-					case 0xF: return Pixel.Presets.White;       // FG_WHITE
+					case 0x0: return Pixel.Presets.Black;	
+					case 0x1: return Pixel.Presets.DarkBlue;
+					case 0x2: return Pixel.Presets.DarkGreen;	
+					case 0x3: return Pixel.Presets.DarkCyan;
+					case 0x4: return Pixel.Presets.DarkRed; 
+					case 0x5: return Pixel.Presets.DarkMagenta;	
+					case 0x6: return Pixel.Presets.DarkYellow;	
+					case 0x7: return Pixel.Presets.Grey; 
+					case 0x8: return Pixel.Presets.DarkGrey;
+					case 0x9: return Pixel.Presets.Blue; 
+					case 0xA: return Pixel.Presets.Green;
+					case 0xB: return Pixel.Presets.Cyan; 
+					case 0xC: return Pixel.Presets.Red; 
+					case 0xD: return Pixel.Presets.Magenta; 
+					case 0xE: return Pixel.Presets.Yellow;
+					case 0xF: return Pixel.Presets.White; 
 				}
 
 				return Pixel.Empty;
@@ -82,9 +81,9 @@ namespace PixelEngine
 
 				spr = new Sprite(w, h);
 
-				for (int i = 0; i < w; i++)
-					for (int j = 0; j < h; j++)
-						spr[i, j] = Parse(reader.ReadInt16());
+				for (int i = 0; i < h; i++)
+					for (int j = 0; j < w; j++)
+						spr[j, i] = Parse(reader.ReadInt16());
 			}
 
 			return spr;

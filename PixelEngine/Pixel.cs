@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace PixelEngine
 {
@@ -8,8 +10,6 @@ namespace PixelEngine
 		public byte G { get; private set; }
 		public byte B { get; private set; }
 		public byte A { get; private set; }
-
-		public static Pixel[] PresetPixels => (Pixel[])presetPix.Clone();
 
 		public Pixel(byte red, byte green, byte blue, byte alpha = 255)
 		{
@@ -37,14 +37,6 @@ namespace PixelEngine
 			return new Pixel(vals[0], vals[1], vals[2], vals[3]);
 		}
 
-		static Pixel()
-		{
-			Presets[] presets = (Presets[])Enum.GetValues(typeof(Presets));
-			presetPix = new Pixel[presets.Length];
-			for (int i = 0; i < presetPix.Length; i++)
-				presetPix[i] = presets[i];
-		}
-
 		#region Presets
 		public enum Presets : uint
 		{
@@ -61,6 +53,7 @@ namespace PixelEngine
 			Purple = 0x911eb4,
 			Lime = 0xbfef45,
 			Pink = 0xfabebe,
+			Snow = 0xFFFAFA,
 			Teal = 0x469990,
 			Lavender = 0xe6beff,
 			Beige = 0xfffac8,
@@ -70,19 +63,37 @@ namespace PixelEngine
 			Apricot = 0xffd8b1,
 			Navy = 0x000075,
 			Black = 0x000000,
-			DarkGrey = 0x808080,
-			DarkRed = 0x800000,
-			DarkYellow = 0x808000,
-			DarkGreen = 0x008000,
-			DarkCyan = 0x008080,
-			DarkBlue = 0x000080,
-			DarkMagenta = 0x800080
+			DarkGrey = 0x8B8B8B,
+			DarkRed = 0x8B0000,
+			DarkYellow = 0x8B8B00,
+			DarkGreen = 0x008B00,
+			DarkCyan = 0x008B8B,
+			DarkBlue = 0x00008B,
+			DarkMagenta = 0x8B008B
 		}
 
 		public static readonly Pixel Empty = new Pixel(0, 0, 0, 0);
 
-		private static Pixel[] presetPix;
+		private static Dictionary<Presets, Pixel> presetPixels;
+		public static Pixel[] PresetPixels => presetPixels.Values.ToArray();
 		#endregion
+
+		static Pixel()
+		{
+			Pixel ToPixel(Presets p)
+			{
+				string hex = p.ToString("X");
+
+				byte r = (byte)Convert.ToUInt32(hex.Substring(2, 2), 16);
+				byte g = (byte)Convert.ToUInt32(hex.Substring(4, 2), 16);
+				byte b = (byte)Convert.ToUInt32(hex.Substring(6, 2), 16);
+
+				return new Pixel(r, g, b);
+			}
+
+			Presets[] presets = (Presets[])Enum.GetValues(typeof(Presets));
+			presetPixels = presets.ToDictionary(p => p, p => ToPixel(p));
+		}
 
 		public static bool operator ==(Pixel a, Pixel b)
 		{
@@ -93,13 +104,9 @@ namespace PixelEngine
 
 		public static implicit operator Pixel(Presets p)
 		{
-			string hex = p.ToString("X");
-
-			byte r = (byte)Convert.ToUInt32(hex.Substring(2, 2), 16);
-			byte g = (byte)Convert.ToUInt32(hex.Substring(4, 2), 16);
-			byte b = (byte)Convert.ToUInt32(hex.Substring(6, 2), 16);
-
-			return new Pixel(r, g, b);
+			if (presetPixels.TryGetValue(p, out Pixel pix))
+				return pix;
+			return Empty;
 		}
 
 		public override bool Equals(object obj)

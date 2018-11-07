@@ -73,12 +73,13 @@ namespace PixelEngine
 
 		public unsafe void Draw(Sprite drawTarget, Sprite textTarget)
 		{
-			if (game.PixWidth == 1 && game.PixHeight == 1)
-				fixed (Pixel* ptr = drawTarget.GetData())
+			fixed (Pixel* ptr = drawTarget.GetData())
+			{
+				if (game.PixWidth == 1 && game.PixHeight == 1)
 					RenderUnitPixels(drawTarget.Width, drawTarget.Height, ptr);
-			else
-				fixed (Pixel* ptr = drawTarget.GetData())
+				else
 					RenderPixels(drawTarget.Width, drawTarget.Height, game.PixWidth, game.PixHeight, ptr);
+			}
 
 			if (textTarget != null)
 				fixed (Pixel* ptr = textTarget.GetData())
