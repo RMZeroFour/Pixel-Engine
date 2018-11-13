@@ -38,6 +38,7 @@ namespace Examples
 			rp.Start(); 
 		}
 
+		// Called once per frame
 	  	public override void OnUpdate(float elapsed)
 		{
 			// Loop through all the pixels

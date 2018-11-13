@@ -15,8 +15,6 @@ namespace PixelEngine
 			colorData = new Pixel[Width * Height];
 		}
 
-		public Sprite(Bitmap bmp) => LoadFromBitmap(bmp);
-
 		private void LoadFromBitmap(Bitmap bmp)
 		{
 			Width = bmp.Width;
@@ -95,10 +93,18 @@ namespace PixelEngine
 				return new Sprite(8, 8);
 
 			if (path.EndsWith(".spr"))
+			{
 				return LoadFromSpr(path);
+			}
 			else
+			{
 				using (Bitmap bmp = (Bitmap)Image.FromFile(path))
-					return new Sprite(bmp);
+				{
+					Sprite spr = new Sprite(0, 0);
+					spr.LoadFromBitmap(bmp);
+					return spr;
+				}
+			}
 		}
 		public static void Save(Sprite spr, string path)
 		{

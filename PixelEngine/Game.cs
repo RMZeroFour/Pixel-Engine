@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using PixelEngine.Extensions;
 using PixelEngine.Utilities;
 using static PixelEngine.Windows;
 
@@ -128,6 +129,8 @@ namespace PixelEngine
 		private void GameLoop()
 		{
 			Clock = new Clock();
+
+			Extension.Init(this);
 
 			OnCreate();
 
@@ -318,7 +321,7 @@ namespace PixelEngine
 			return IntPtr.Zero;
 		}
 		#endregion
-
+		
 		#region Helpers
 		#region Engine
 		protected void Delay(float time)
