@@ -78,6 +78,74 @@ namespace PixelEngine
 		public static Pixel[] PresetPixels => presetPixels.Values.ToArray();
 		#endregion
 
+		public static Pixel FromRgb(uint rgb)
+		{
+			byte a = (byte)(rgb & 0xFF);
+			byte b = (byte)((rgb >> 8) & 0xFF);
+			byte g = (byte)((rgb >> 16) & 0xFF);
+			byte r = (byte)((rgb >> 24) & 0xFF);
+
+			return new Pixel(r, g, b, a);
+		}
+		public static Pixel FromHsv(float h, float s, float v)
+		{
+			float c = v * s;
+			float nh = (h / 60) % 6;
+			float x = c * (1 - Math.Abs(nh % 2 - 1));
+			float m = v - c;
+
+			float r, g, b;
+
+			if (0 <= nh && nh < 1)
+			{
+				r = c;
+				g = x;
+				b = 0;
+			}
+			else if (1 <= nh && nh < 2)
+			{
+				r = x;
+				g = c;
+				b = 0;
+			}
+			else if (2 <= nh && nh < 3)
+			{
+				r = 0;
+				g = c;
+				b = x;
+			}
+			else if (3 <= nh && nh < 4)
+			{
+				r = 0;
+				g = x;
+				b = c;
+			}
+			else if (4 <= nh && nh < 5)
+			{
+				r = x;
+				g = 0;
+				b = c;
+			}
+			else if (5 <= nh && nh < 6)
+			{
+				r = c;
+				g = 0;
+				b = x;
+			}
+			else
+			{
+				r = 0;
+				g = 0;
+				b = 0;
+			}
+
+			r += m;
+			g += m;
+			b += m;
+
+			return new Pixel((byte)Math.Floor(r * 255), (byte)Math.Floor(g * 255), (byte)Math.Floor(b * 255));
+		}
+
 		static Pixel()
 		{
 			Pixel ToPixel(Presets p)
