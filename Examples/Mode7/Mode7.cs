@@ -20,7 +20,7 @@ namespace Examples
 		private float near;
 		private float far;
 		private float foVHalf;
-		private float speed = 1;
+		private float speed = 10;
 
 		private Sprite sprGround;
 		private Sprite sprSky;
@@ -37,7 +37,7 @@ namespace Examples
 		{
 			Clear(Pixel.Presets.Black);
 
-			elapsed *= 0.025f * speed;
+			elapsed *= speed;
 
 			if (GetKey(Key.Q).Down) near += 0.01f * elapsed;
 			if (GetKey(Key.W).Down) near -= 0.01f * elapsed;
@@ -46,8 +46,8 @@ namespace Examples
 			if (GetKey(Key.Z).Down) foVHalf += 0.01f * elapsed;
 			if (GetKey(Key.X).Down) foVHalf -= 0.01f * elapsed;
 
-			if (GetKey(Key.O).Down) speed += 0.1f * elapsed;
-			if (GetKey(Key.P).Down) speed -= 0.1f * elapsed;
+			if (GetKey(Key.O).Down) speed += 0.5f * elapsed / speed;
+			if (GetKey(Key.P).Down) speed -= 0.5f * elapsed / speed;
 
 			if (speed <= 0) speed = 0.1f;
 
@@ -80,7 +80,6 @@ namespace Examples
 					float sampleX = (endX - startX) * sampleWidth + startX;
 					float sampleY = (endY - startY) * sampleWidth + startY;
 
-					// Wrap sample coordinates to give "infinite" periodicity on maps
 					sampleX %= 1;
 					sampleY %= 1;
 
@@ -95,21 +94,21 @@ namespace Examples
 			DrawLine(new Point(0, ScreenHeight / 2), new Point(ScreenWidth, ScreenHeight / 2), Pixel.Presets.Cyan);
 
 			if (GetKey(Key.Left).Down)
-				worldA -= 0.1f * elapsed;
+				worldA -= elapsed * 2;
 
 			if (GetKey(Key.Right).Down)
-				worldA += 0.1f * elapsed;
+				worldA += elapsed * 2;
 
 			if (GetKey(Key.Up).Down)
 			{
-				worldX += Cos(worldA) * 0.02f * elapsed;
-				worldY += Sin(worldA) * 0.02f * elapsed;
+				worldX += Cos(worldA) * elapsed;
+				worldY += Sin(worldA) * elapsed;
 			}
 
 			if (GetKey(Key.Down).Down)
 			{
-				worldX -= Cos(worldA) * 0.02f * elapsed;
-				worldY -= Sin(worldA) * 0.02f * elapsed;
+				worldX -= Cos(worldA) * elapsed;
+				worldY -= Sin(worldA) * elapsed;
 			}
 
 			DrawText(new Point(10, 10), $"X:{Round(worldX, 3)}", Pixel.Presets.White, 1);

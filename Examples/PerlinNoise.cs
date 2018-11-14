@@ -36,19 +36,19 @@ namespace Examples
 		{
 			// Adjust hue divisor based on input
 			if (GetKey(Key.Q).Down)
-				hue += 0.1f * elapsed / 100;
+				hue += elapsed;
 			if (GetKey(Key.A).Down)
-				hue -= 0.1f * elapsed / 100;
+				hue -= elapsed;
 
 			if (GetKey(Key.W).Down)
-				saturation += 0.1f * elapsed / 100;
+				saturation +=  elapsed;
 			if (GetKey(Key.S).Down)
-				saturation -= 0.1f * elapsed / 100;
+				saturation -= elapsed;
 
 			if (GetKey(Key.E).Down)
-				value += 0.1f * elapsed / 100;
+				value +=  elapsed;
 			if (GetKey(Key.D).Down)
-				value -= 0.1f * elapsed / 100;
+				value -=  elapsed;
 
 			hue = Round(hue, 1);
 			if (hue <= 0)
