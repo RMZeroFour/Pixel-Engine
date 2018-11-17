@@ -58,9 +58,9 @@ namespace PixelEngine
 				{
 					reader.BaseStream.Seek(chunkSize, SeekOrigin.Current);
 					dump = reader.ReadChars(4);
-					chunkSize = reader.ReadInt64();
+					chunkSize = reader.ReadUInt32();
 				}
-
+				
 				SampleCount = chunkSize / (WavHeader.Channels * (WavHeader.BitsPerSample >> 3));
 				Channels = WavHeader.Channels;
 
@@ -268,18 +268,22 @@ namespace PixelEngine
 				{
 					PlayingSample ps = playingSamples[i];
 
-					ps.SamplePosition += (long)(ps.AudioSample.WavHeader.SamplesPerSec * timeStep);
+					float increment = ps.AudioSample.WavHeader.SamplesPerSec * timeStep;
+					ps.SamplePosition += (long)Math.Ceiling(increment);
 
 					if (ps.SamplePosition < ps.AudioSample.SampleCount)
-						if (Volume > 0)
-							mixerSample += ps.AudioSample.Samples[(ps.SamplePosition * ps.AudioSample.Channels) + channel];
-					else if (ps.Loop)
-						ps.SamplePosition = 0;
+					{
+						mixerSample += ps.AudioSample.Samples[(ps.SamplePosition * ps.AudioSample.Channels) + channel];
+					}
 					else
-						ps.Finished = true;
+					{
+						if (ps.Loop)
+							ps.SamplePosition = 0;
+						else
+							ps.Finished = true;
+					}
 
 					playingSamples[i] = ps;
-				
 					playingSamples.RemoveAll(s => s.Finished);
 				}
 			}

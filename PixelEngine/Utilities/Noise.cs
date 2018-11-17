@@ -10,6 +10,9 @@ namespace PixelEngine.Utilities
 
 		private static Random rnd;
 
+		public static int Octaves { get; set; } = 1;
+		public static float Persistence { get; set; } = 1;
+
 		public static void Seed() => Seed(Randoms.RandomInt(int.MinValue, int.MaxValue));
 		public static void Seed(int seed)
 		{
@@ -69,7 +72,7 @@ namespace PixelEngine.Utilities
 								   Lerp(u, Grad(perm[AB + 1], x, y - 1, z - 1), Grad(perm[BB + 1], x - 1, y - 1, z - 1))));
 		}
 
-		public static float Calculate(float x, int octaves = 1, float persistence = 1)
+		public static float Calculate(float x)
 		{
 			x += xOff;
 
@@ -78,17 +81,17 @@ namespace PixelEngine.Utilities
 			float totalAmp = 0;
 			int frequency = 1;
 
-			for (int i = 0; i < octaves; i++)
+			for (int i = 0; i < Octaves; i++)
 			{
 				total += amplitude * Perlin(x * frequency);
 				frequency = 1 << i;
 				totalAmp += amplitude;
-				amplitude *= persistence;
+				amplitude *= Persistence;
 			}
 
 			return total / totalAmp;
 		}
-		public static float Calculate(float x, float y, int octaves = 1, float persistence = 1)
+		public static float Calculate(float x, float y)
 		{
 			x += xOff;
 			y += yOff;
@@ -98,17 +101,17 @@ namespace PixelEngine.Utilities
 			float totalAmp = 0;
 			int frequency = 1;
 
-			for (int i = 0; i < octaves; i++)
+			for (int i = 0; i < Octaves; i++)
 			{
 				total += amplitude * Perlin(x * frequency, y * frequency);
 				frequency = 1 << i;
 				totalAmp += amplitude;
-				amplitude *= persistence;
+				amplitude *= Persistence;
 			}
 
 			return total / totalAmp;
 		}
-		public static float Calculate(float x, float y, float z, int octaves = 1, float persistence = 1)
+		public static float Calculate(float x, float y, float z)
 		{
 			x += xOff;
 			y += yOff;
@@ -119,12 +122,12 @@ namespace PixelEngine.Utilities
 			float totalAmp = 0;
 			int frequency = 1;
 
-			for (int i = 0; i < octaves; i++)
+			for (int i = 0; i < Octaves; i++)
 			{
 				total += amplitude * Perlin(x * frequency, y * frequency, z * frequency);
 				frequency = 1 << i;
 				totalAmp += amplitude;
-				amplitude *= persistence;
+				amplitude *= Persistence;
 			}
 
 			return total / totalAmp;
