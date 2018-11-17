@@ -268,18 +268,22 @@ namespace PixelEngine
 				{
 					PlayingSample ps = playingSamples[i];
 
-					ps.SamplePosition += (long)(ps.AudioSample.WavHeader.SamplesPerSec * timeStep);
+					float increment = ps.AudioSample.WavHeader.SamplesPerSec * timeStep;
+					ps.SamplePosition += (long)Math.Ceiling(increment);
 
 					if (ps.SamplePosition < ps.AudioSample.SampleCount)
-						if (Volume > 0)
-							mixerSample += ps.AudioSample.Samples[(ps.SamplePosition * ps.AudioSample.Channels) + channel];
-					else if (ps.Loop)
-						ps.SamplePosition = 0;
+					{
+						mixerSample += ps.AudioSample.Samples[(ps.SamplePosition * ps.AudioSample.Channels) + channel];
+					}
 					else
-						ps.Finished = true;
+					{
+						if (ps.Loop)
+							ps.SamplePosition = 0;
+						else
+							ps.Finished = true;
+					}
 
 					playingSamples[i] = ps;
-				
 					playingSamples.RemoveAll(s => s.Finished);
 				}
 			}
