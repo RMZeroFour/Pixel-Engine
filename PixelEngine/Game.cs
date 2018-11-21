@@ -322,7 +322,7 @@ namespace PixelEngine
 			return IntPtr.Zero;
 		}
 		#endregion
-		
+
 		#region Helpers
 		#region Engine
 		protected void Delay(float time)
@@ -1085,7 +1085,7 @@ namespace PixelEngine
 
 					textTarget = temp;
 				}
-			
+
 				switch (PixelMode)
 				{
 					case Pixel.Mode.Normal:

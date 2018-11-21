@@ -46,7 +46,7 @@ namespace PixelEngine
 					BitsPerSample = reader.ReadInt16()
 				};
 				WavHeader.Size = (short)Marshal.SizeOf(WavHeader);
-				
+
 				if (WavHeader.SamplesPerSec != 44100)
 					return;
 
@@ -60,7 +60,7 @@ namespace PixelEngine
 					dump = reader.ReadChars(4);
 					chunkSize = reader.ReadUInt32();
 				}
-				
+
 				SampleCount = chunkSize / (WavHeader.Channels * (WavHeader.BitsPerSample >> 3));
 				Channels = WavHeader.Channels;
 

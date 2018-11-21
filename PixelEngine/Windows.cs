@@ -634,16 +634,16 @@ namespace PixelEngine
 		#endregion
 
 		#region Winmm
-		[DllImport(Winmm, EntryPoint = "waveOutPrepareHeader")]
+		[DllImport(Winmm, EntryPoint = "waveOutPrepareHeader", SetLastError = true)]
 		public static extern int WaveOutPrepareHeader(IntPtr hWaveOut, ref WaveHdr lpWaveOutHdr, int uSize);
 
-		[DllImport(Winmm, EntryPoint = "waveOutUnprepareHeader")]
+		[DllImport(Winmm, EntryPoint = "waveOutUnprepareHeader", SetLastError = true)]
 		public static extern int WaveOutUnprepareHeader(IntPtr hWaveOut, ref WaveHdr lpWaveOutHdr, int uSize);
 
-		[DllImport(Winmm, EntryPoint = "waveOutOpen")]
+		[DllImport(Winmm, EntryPoint = "waveOutOpen", SetLastError = true)]
 		public static extern int WaveOutOpen(out IntPtr hWaveOut, int uDeviceID, WaveFormatEx lpFormat, WaveDelegate dwCallback, int dwInstance, int dwFlags);
 
-		[DllImport(Winmm, EntryPoint = "waveOutWrite")]
+		[DllImport(Winmm, EntryPoint = "waveOutWrite", SetLastError = true)]
 		public static extern int WaveOutWrite(IntPtr hWaveOut, ref WaveHdr lpWaveOutHdr, int uSize);
 		#endregion
 

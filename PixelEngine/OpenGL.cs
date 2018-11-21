@@ -54,10 +54,6 @@ namespace PixelEngine
 				game.ScreenWidth, game.ScreenHeight,
 				0, (uint)GL.RGBA, (uint)GL.UnsignedByte, null);
 
-			IntPtr proc = WglGetProcAddress("wglSwapIntervalEXT");
-			SwapInterval si = Marshal.GetDelegateForFunctionPointer<SwapInterval>(proc);
-			si?.Invoke(0);
-
 			sw = 1f / game.ScreenWidth;
 			sh = 1f / game.ScreenHeight;
 
