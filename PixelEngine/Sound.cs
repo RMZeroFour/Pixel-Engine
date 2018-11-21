@@ -16,92 +16,104 @@ namespace PixelEngine
 			using (Stream stream = File.OpenRead(file))
 			using (BinaryReader reader = new BinaryReader(stream))
 			{
-				const string Riff = "RIFF";
-				const string Wave = "WAVE";
-				const string Fmt = "fmt ";
+				if ((file.EndsWith(".wav") && LoadFromWav(reader)) ||
+					(file.EndsWith(".mp3") && LoadFromMp3(reader)))
+					Valid = true;
+			}
+		}
 
-				char[] dump;
+		private bool LoadFromWav(BinaryReader reader)
+		{
+			const string Riff = "RIFF";
+			const string Wave = "WAVE";
+			const string Fmt = "fmt ";
 
-				dump = reader.ReadChars(4); // RIFF"
-				if (string.Compare(string.Concat(dump), Riff) != 0)
-					return;
+			char[] dump;
 
-				dump = reader.ReadChars(4); // Ignore
+			dump = reader.ReadChars(4); // RIFF"
+			if (string.Compare(string.Concat(dump), Riff) != 0)
+				return false;
 
-				dump = reader.ReadChars(4); // "WAVE"
-				if (string.Compare(string.Concat(dump), Wave) != 0)
-					return;
+			dump = reader.ReadChars(4); // Ignore
 
-				dump = reader.ReadChars(4); // "fmt "
-				if (string.Compare(string.Concat(dump), Fmt) != 0)
-					return;
+			dump = reader.ReadChars(4); // "WAVE"
+			if (string.Compare(string.Concat(dump), Wave) != 0)
+				return false;
 
-				dump = reader.ReadChars(4); // Ignore
+			dump = reader.ReadChars(4); // "fmt "
+			if (string.Compare(string.Concat(dump), Fmt) != 0)
+				return false;
 
-				WavHeader = new WaveFormatEx()
+			dump = reader.ReadChars(4); // Ignore
+
+			WavHeader = new WaveFormatEx()
+			{
+				FormatTag = reader.ReadInt16(),
+				Channels = reader.ReadInt16(),
+				SamplesPerSec = reader.ReadInt32(),
+				AvgBytesPerSec = reader.ReadInt32(),
+				BlockAlign = reader.ReadInt16(),
+				BitsPerSample = reader.ReadInt16()
+			};
+			WavHeader.Size = (short)Marshal.SizeOf(WavHeader);
+
+			if (WavHeader.SamplesPerSec != 44100)
+				return false;
+
+			const string Data = "data";
+
+			dump = reader.ReadChars(4); // Chunk header
+			long chunkSize = reader.ReadUInt32();
+			while (string.Compare(string.Concat(dump), Data) != 0)
+			{
+				reader.BaseStream.Seek(chunkSize, SeekOrigin.Current);
+				dump = reader.ReadChars(4);
+				chunkSize = reader.ReadUInt32();
+			}
+
+			SampleCount = chunkSize / (WavHeader.Channels * (WavHeader.BitsPerSample >> 3));
+			Channels = WavHeader.Channels;
+
+			Samples = new short[SampleCount * Channels];
+
+			const float Mult8Bit = (float)short.MaxValue / byte.MaxValue;
+			const float Mult24Bit = (float)short.MaxValue / (1 << 24);
+			const float Mult32Bit = (float)short.MaxValue / int.MaxValue;
+
+			for (long l = 0; l < Samples.Length; l++)
+			{
+				// Divide by 8 to convert to bits to bytes 
+				switch (WavHeader.BitsPerSample / 8)
 				{
-					FormatTag = reader.ReadInt16(),
-					Channels = reader.ReadInt16(),
-					SamplesPerSec = reader.ReadInt32(),
-					AvgBytesPerSec = reader.ReadInt32(),
-					BlockAlign = reader.ReadInt16(),
-					BitsPerSample = reader.ReadInt16()
-				};
-				WavHeader.Size = (short)Marshal.SizeOf(WavHeader);
+					case 1: // 8-bits
+						byte b = reader.ReadByte();
+						Samples[l] = (short)(b * Mult8Bit);
+						break;
 
-				if (WavHeader.SamplesPerSec != 44100)
-					return;
+					case 2: // 16-bits
+						short s = reader.ReadInt16();
+						Samples[l] = s;
+						break;
 
-				const string Data = "data";
+					case 3: // 24-bits
+						byte[] bs = reader.ReadBytes(3);
+						int n = bs[0] | (bs[1] << 8) | (bs[2] << 16);
+						Samples[l] = (short)(n * Mult24Bit);
+						break;
 
-				dump = reader.ReadChars(4); // Chunk header
-				long chunkSize = reader.ReadUInt32();
-				while (string.Compare(string.Concat(dump), Data) != 0)
-				{
-					reader.BaseStream.Seek(chunkSize, SeekOrigin.Current);
-					dump = reader.ReadChars(4);
-					chunkSize = reader.ReadUInt32();
-				}
-
-				SampleCount = chunkSize / (WavHeader.Channels * (WavHeader.BitsPerSample >> 3));
-				Channels = WavHeader.Channels;
-
-				Samples = new short[SampleCount * Channels];
-
-				const float Mult8Bit = (float)short.MaxValue / byte.MaxValue;
-				const float Mult24Bit = (float)short.MaxValue / (1 << 24);
-				const float Mult32Bit = (float)short.MaxValue / int.MaxValue;
-
-				for (long l = 0; l < Samples.Length; l++)
-				{
-					// Divide by 8 to convert to bits to bytes 
-					switch (WavHeader.BitsPerSample / 8)
-					{
-						case 1: // 8-bits
-							byte b = reader.ReadByte();
-							Samples[l] = (short)(b * Mult8Bit);
-							break;
-
-						case 2: // 16-bits
-							short s = reader.ReadInt16();
-							Samples[l] = s;
-							break;
-
-						case 3: // 24-bits
-							byte[] bs = reader.ReadBytes(3);
-							int n = bs[0] | (bs[1] << 8) | (bs[2] << 16);
-							Samples[l] = (short)(n * Mult24Bit);
-							break;
-
-						case 4: // 32-bits
-							int i = reader.ReadInt32();
-							Samples[l] = (byte)(i * Mult32Bit);
-							break;
-					}
+					case 4: // 32-bits
+						int i = reader.ReadInt32();
+						Samples[l] = (byte)(i * Mult32Bit);
+						break;
 				}
 			}
 
-			Valid = true;
+			return true;
+		}
+
+		private bool LoadFromMp3(BinaryReader reader)
+		{
+			return true;
 		}
 
 		public bool Loop { get; set; }
