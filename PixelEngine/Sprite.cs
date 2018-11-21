@@ -72,7 +72,8 @@ namespace PixelEngine
 
 			Sprite spr;
 
-			using (BinaryReader reader = new BinaryReader(File.OpenRead(path)))
+			using (Stream stream = File.OpenRead(path))
+			using (BinaryReader reader = new BinaryReader(stream))
 			{
 				int w = reader.ReadInt32();
 				int h = reader.ReadInt32();

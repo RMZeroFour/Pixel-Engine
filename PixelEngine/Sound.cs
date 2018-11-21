@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -12,7 +13,8 @@ namespace PixelEngine
 	{
 		internal Sound(string file)
 		{
-			using (BinaryReader reader = new BinaryReader(File.OpenRead(file)))
+			using (Stream stream = File.OpenRead(file))
+			using (BinaryReader reader = new BinaryReader(stream))
 			{
 				const string Riff = "RIFF";
 				const string Wave = "WAVE";
@@ -64,36 +66,37 @@ namespace PixelEngine
 				SampleCount = chunkSize / (WavHeader.Channels * (WavHeader.BitsPerSample >> 3));
 				Channels = WavHeader.Channels;
 
-				Samples = new float[SampleCount * Channels];
+				Samples = new short[SampleCount * Channels];
 
-				int index = 0;
-				for (long l = 0; l < SampleCount; l++)
+				const float Mult8Bit = (float)short.MaxValue / byte.MaxValue;
+				const float Mult24Bit = (float)short.MaxValue / (1 << 24);
+				const float Mult32Bit = (float)short.MaxValue / int.MaxValue;
+
+				for (long l = 0; l < Samples.Length; l++)
 				{
-					for (int c = 0; c < Channels; c++)
+					// Divide by 8 to convert to bits to bytes 
+					switch (WavHeader.BitsPerSample / 8)
 					{
-						// Divide by 8 to convert to bits to bytes 
-						// as sizeof returns bytes
+						case 1: // 8-bits
+							byte b = reader.ReadByte();
+							Samples[l] = (short)(b * Mult8Bit);
+							break;
 
-						switch (WavHeader.BitsPerSample / 8)
-						{
-							case sizeof(byte): // 8-bits
-								byte b = reader.ReadByte();
-								Samples[index] = (float)b / byte.MaxValue;
-								index++;
-								break;
+						case 2: // 16-bits
+							short s = reader.ReadInt16();
+							Samples[l] = s;
+							break;
 
-							case sizeof(short): // 16-bits
-								short s = reader.ReadInt16();
-								Samples[index] = (float)s / short.MaxValue;
-								index++;
-								break;
+						case 3: // 24-bits
+							byte[] bs = reader.ReadBytes(3);
+							int n = bs[0] | (bs[1] << 8) | (bs[2] << 16);
+							Samples[l] = (short)(n * Mult24Bit);
+							break;
 
-							case sizeof(int): // 32-bits
-								int i = reader.ReadInt32();
-								Samples[index] = (float)i / int.MaxValue;
-								index++;
-								break;
-						}
+						case 4: // 32-bits
+							int i = reader.ReadInt32();
+							Samples[l] = (byte)(i * Mult32Bit);
+							break;
 					}
 				}
 			}
@@ -104,7 +107,7 @@ namespace PixelEngine
 		public bool Loop { get; set; }
 
 		internal WaveFormatEx WavHeader;
-		internal float[] Samples = null;
+		internal short[] Samples = null;
 		internal long SampleCount = 0;
 		internal int Channels = 0;
 		internal bool Valid = false;
@@ -260,6 +263,8 @@ namespace PixelEngine
 
 		private float GetMixerOutput(int channel, float globalTime, float timeStep)
 		{
+			const float MaxValue = 1f / short.MaxValue;
+
 			float mixerSample = 0.0f;
 
 			if (playingSamples != null)
@@ -273,7 +278,7 @@ namespace PixelEngine
 
 					if (ps.SamplePosition < ps.AudioSample.SampleCount)
 					{
-						mixerSample += ps.AudioSample.Samples[(ps.SamplePosition * ps.AudioSample.Channels) + channel];
+						mixerSample += ps.AudioSample.Samples[(ps.SamplePosition * ps.AudioSample.Channels) + channel] * MaxValue;
 					}
 					else
 					{
