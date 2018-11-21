@@ -27,15 +27,49 @@ namespace PixelEngine
 				Rectangle rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
 				BitmapData bmpData = bmp.LockBits(rect, ImageLockMode.ReadOnly, bmp.PixelFormat);
 
-				int* scan0 = (int*)bmpData.Scan0;
+				byte* scan0 = (byte*)bmpData.Scan0;
 
-				int stride = bmpData.Stride / 4;
+				int depth = Image.GetPixelFormatSize(bmp.PixelFormat);
 
+				int length = Width * Height * depth / 8;
+				
 				for (int x = 0; x < Width; x++)
 				{
 					for (int y = 0; y < Height; y++)
 					{
-						Color c = Color.FromArgb(*(scan0 + x + y * stride));
+						int i = ((y * Width) + x) * depth / 8;
+
+						Color c = Color.Empty;
+
+						switch (depth)
+						{
+							case 32:
+								{
+									byte b = scan0[i];
+									byte g = scan0[i + 1];
+									byte r = scan0[i + 2];
+									byte a = scan0[i + 3];
+									c = Color.FromArgb(a, r, g, b);
+									break;
+								}
+
+							case 24:
+								{
+									byte b = scan0[i];
+									byte g = scan0[i + 1];
+									byte r = scan0[i + 2];
+									c = Color.FromArgb(r, g, b);
+									break;
+								}
+
+							case 8:
+								{
+									byte b = scan0[i];
+									c = Color.FromArgb(b, b, b);
+									break;
+								}
+						}
+
 						this[x, y] = new Pixel(c.R, c.G, c.B, c.A);
 					}
 				}
@@ -114,22 +148,31 @@ namespace PixelEngine
 				using (Bitmap bmp = new Bitmap(spr.Width, spr.Height))
 				{
 					Rectangle rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
-					BitmapData bmpData = bmp.LockBits(rect, ImageLockMode.ReadOnly, bmp.PixelFormat);
+					BitmapData bmpData = bmp.LockBits(rect, ImageLockMode.WriteOnly, bmp.PixelFormat);
 
-					int* scan0 = (int*)bmpData.Scan0;
-					int stride = bmpData.Stride / 4;
+					byte* scan0 = (byte*)bmpData.Scan0;
+
+					int depth = Image.GetPixelFormatSize(bmp.PixelFormat);
+
+					int length = spr.Width * spr.Height * depth / 8;
 
 					for (int x = 0; x < spr.Width; x++)
 					{
 						for (int y = 0; y < spr.Height; y++)
 						{
 							Pixel p = spr[x, y];
-							Color c = Color.FromArgb(p.A, p.R, p.G, p.B);
-							*(scan0 + x + y * stride) = c.ToArgb();
+
+							int i = ((y * spr.Width) + x) * depth / 8;
+
+							scan0[i] = p.B;
+							scan0[i + 1] = p.G;
+							scan0[i + 2] = p.R;
+							scan0[i + 3] = p.A;
 						}
 					}
 
 					bmp.UnlockBits(bmpData);
+
 					bmp.Save(path);
 				}
 			}
