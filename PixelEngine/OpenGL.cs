@@ -12,7 +12,6 @@ namespace PixelEngine
 		private IntPtr deviceContext;
 		private IntPtr renderContext;
 
-		private float sw, sh;
 		private float pw, ph;
 		private float ww, wh;
 
@@ -54,16 +53,13 @@ namespace PixelEngine
 				game.ScreenWidth, game.ScreenHeight,
 				0, (uint)GL.RGBA, (uint)GL.UnsignedByte, null);
 
-			sw = 1f / game.ScreenWidth;
-			sh = 1f / game.ScreenHeight;
-
-			pw = game.PixWidth * sw;
-			ph = game.PixHeight * sh;
-
 			ww = 1f / game.windowWidth;
 			wh = 1f / game.windowHeight;
 
-			SetValues(pw, ph, sw, sh, ww, wh);
+			pw = game.PixWidth * ww;
+			ph = game.PixHeight * wh;
+
+			SetValues(pw, ph, ww, wh);
 		}
 
 		public unsafe void Draw(Sprite drawTarget, Sprite textTarget)
@@ -73,7 +69,7 @@ namespace PixelEngine
 				if (game.PixWidth == 1 && game.PixHeight == 1)
 					RenderUnitPixels(drawTarget.Width, drawTarget.Height, ptr);
 				else
-					RenderPixels(drawTarget.Width, drawTarget.Height, game.PixWidth, game.PixHeight, ptr);
+					RenderPixels(drawTarget.Width, drawTarget.Height, ptr);
 			}
 
 			if (textTarget != null)
