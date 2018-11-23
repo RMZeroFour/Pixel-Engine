@@ -15,11 +15,8 @@ namespace PixelEngine
 		{
 			using (Stream stream = File.OpenRead(file))
 			using (BinaryReader reader = new BinaryReader(stream))
-			{
-				if ((file.EndsWith(".wav") && LoadFromWav(reader)) ||
-					(file.EndsWith(".mp3") && LoadFromMp3(reader)))
+				if (file.EndsWith(".wav") && LoadFromWav(reader))
 					Valid = true;
-			}
 		}
 
 		private bool LoadFromWav(BinaryReader reader)
@@ -108,11 +105,6 @@ namespace PixelEngine
 				}
 			}
 
-			return true;
-		}
-
-		private bool LoadFromMp3(BinaryReader reader)
-		{
 			return true;
 		}
 
