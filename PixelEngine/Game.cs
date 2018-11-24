@@ -22,7 +22,7 @@ namespace PixelEngine
 		protected int FrameRate { get; private set; }
 		protected int MouseX { get; private set; }
 		protected int MouseY { get; private set; }
-		protected int MouseScroll { get; private set; }
+		protected Scroll MouseScroll { get; private set; }
 		protected Clock Clock { get; private set; }
 		protected float Volume
 		{
@@ -86,9 +86,13 @@ namespace PixelEngine
 
 		private Sprite fontSprite;
 
+		private Button anyKey;
+		private Button noneKey;
+		private Button anyMouse;
+		private Button noneMouse;
+
 		private bool delaying;
 		private float delayTime;
-
 		private readonly Button[] keyboard = new Button[256];
 		private readonly bool[] newKeyboard = new bool[256];
 		private readonly bool[] oldKeyboard = new bool[256];
@@ -221,6 +225,16 @@ namespace PixelEngine
 
 				oldMouse[i] = newMouse[i];
 			}
+
+			anyMouse.Pressed = mouse.Any(m => m.Pressed);
+			anyMouse.Down = mouse.Any(m => m.Down);
+			anyMouse.Released = mouse.Any(m => m.Released);
+
+			noneMouse.Pressed = !anyMouse.Pressed;
+			noneMouse.Down = !anyMouse.Down;
+			noneMouse.Released = !anyMouse.Released;
+
+			MouseScroll = Scroll.None;
 		}
 		private void HandleKeyboard()
 		{
@@ -248,6 +262,14 @@ namespace PixelEngine
 
 				oldKeyboard[i] = newKeyboard[i];
 			}
+
+			anyKey.Pressed = keyboard.Any(k => k.Pressed);
+			anyKey.Down = keyboard.Any(k => k.Down);
+			anyKey.Released = keyboard.Any(k => k.Released);
+
+			noneKey.Pressed = !anyKey.Pressed;
+			noneKey.Down = !anyKey.Down;
+			noneKey.Released = !anyKey.Released;
 		}
 		private void HandleDrawTarget()
 		{
@@ -256,6 +278,9 @@ namespace PixelEngine
 		}
 		private protected override IntPtr WndProc(IntPtr handle, uint msg, int wParam, int lParam)
 		{
+			uint LoWord(uint val) => val & 0xFFFF;
+			uint HiWord(uint val) => val >> 16;
+
 			switch (msg)
 			{
 				case (uint)WM.MOUSEMOVE:
@@ -282,8 +307,8 @@ namespace PixelEngine
 					OnKeyRelease(ku);
 					break;
 				case (uint)WM.MOUSEWHEEL:
-					short wheel = MouseWheelDelta(wParam);
-					MouseScroll += wheel / WheelDelta;
+					short wheel = (short)(wParam >> 16);
+					MouseScroll = (Scroll)(wheel / WheelDelta);
 					OnMouseScroll();
 					break;
 				case (uint)WM.LBUTTONDOWN:
@@ -338,10 +363,22 @@ namespace PixelEngine
 		protected void NoLoop() => paused = true;
 		protected void Loop() => paused = false;
 
-		protected void ScrollReset() => MouseScroll = 0;
-
-		protected Button GetKey(Key k) => keyboard[(int)k];
-		protected Button GetMouse(Mouse m) => mouse[(int)m];
+		protected Button GetKey(Key k)
+		{
+			if (k == Key.Any)
+				return anyKey;
+			if (k == Key.None)
+				return noneKey;
+			return keyboard[(int)k];
+		}
+		protected Button GetMouse(Mouse m)
+		{
+			if (m == Mouse.Any)
+				return anyMouse;
+			if (m == Mouse.None)
+				return noneMouse;
+			return mouse[(int)m];
+		}
 
 		protected Pixel GetScreenPixel(int x, int y) => DrawTarget[x, y];
 		#endregion
@@ -388,7 +425,6 @@ namespace PixelEngine
 
 		#region Collections
 		protected T[] MakeArray<T>(params T[] items) => items;
-		protected T[] MakeArray<T>(IEnumerable<T> items) => items.ToArray();
 		protected T[] MakeArray<T>(int count, Func<int, T> selector)
 		{
 			T[] arr = new T[count];
@@ -398,42 +434,12 @@ namespace PixelEngine
 		}
 
 		protected List<T> MakeList<T>(params T[] items) => items.ToList();
-		protected List<T> MakeList<T>(IEnumerable<T> items) => items.ToList();
 		protected List<T> MakeList<T>(int count, Func<int, T> selector)
 		{
 			List<T> list = new List<T>(count);
 			for (int i = 0; i < count; i++)
 				list.Add(selector(i));
 			return list;
-		}
-
-		protected Dictionary<T, U> MakeDict<T, U>(List<T> keys, List<U> values)
-		{
-			if (keys.Count != values.Count)
-				return null;
-
-			Dictionary<T, U> dict = new Dictionary<T, U>(keys.Count);
-			for (int i = 0; i < keys.Count; i++)
-				dict.Add(keys[i], values[i]);
-			return dict;
-		}
-		protected Dictionary<T, U> MakeDict<T, U>(T[] keys, U[] values)
-		{
-			if (keys.Length != values.Length)
-				return null;
-
-			Dictionary<T, U> dict = new Dictionary<T, U>(keys.Length);
-			for (int i = 0; i < keys.Length; i++)
-				dict.Add(keys[i], values[i]);
-			return dict;
-		}
-		protected Dictionary<T, U> MakeDict<T, U>(IEnumerable<T> keys, IEnumerable<U> values) => MakeDict(keys.ToArray(), values.ToArray());
-		protected Dictionary<T, U> MakeDict<T, U>(int count, Func<int, T> keySelector, Func<int, U> valSelector)
-		{
-			Dictionary<T, U> dict = new Dictionary<T, U>(count);
-			for (int i = 0; i < count; i++)
-				dict.Add(keySelector(i), valSelector(i));
-			return dict;
 		}
 		#endregion
 		#endregion
@@ -552,9 +558,6 @@ namespace PixelEngine
 			mapKeys[0x30] = Key.K0; mapKeys[0x31] = Key.K1; mapKeys[0x32] = Key.K2; mapKeys[0x33] = Key.K3; mapKeys[0x34] = Key.K4;
 			mapKeys[0x35] = Key.K5; mapKeys[0x36] = Key.K6; mapKeys[0x37] = Key.K7; mapKeys[0x38] = Key.K8; mapKeys[0x39] = Key.K9;
 		}
-		private uint LoWord(uint val) => val & 0xFFFF;
-		private uint HiWord(uint val) => val >> 16;
-		private short MouseWheelDelta(int wParam) => (short)(wParam >> 16);
 		#endregion
 
 		#region Drawing
