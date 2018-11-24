@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace FileTesting
+namespace PixelEngine.Utilities
 {
 	public static class Json
 	{
