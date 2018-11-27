@@ -124,8 +124,7 @@ namespace PixelEngine
 			string fileName = Path.GetFileNameWithoutExtension(file);
 			string newFile = Path.Combine(Path.GetTempPath(), $"{nameof(PixelEngine)}.{Assembly.GetExecutingAssembly().GetName().Version}", $"{fileName}.wav");
 
-			if(!File.Exists(newFile))
-				ConvertToMp3(file, newFile);
+			ConvertToMp3(file, newFile);
 
 			using (Stream str = File.OpenRead(newFile))
 			using (BinaryReader br = new BinaryReader(str))
