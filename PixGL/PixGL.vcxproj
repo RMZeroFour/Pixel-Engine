@@ -20,9 +20,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PixGL.h" />
+    <ClInclude Include="PixMp3.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PixGL.cpp" />
+    <ClCompile Include="PixMp3.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

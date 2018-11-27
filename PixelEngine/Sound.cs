@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -15,11 +16,16 @@ namespace PixelEngine
 		{
 			using (Stream stream = File.OpenRead(file))
 			using (BinaryReader reader = new BinaryReader(stream))
-				if (file.EndsWith(".wav") && LoadFromWav(reader))
+			{
+				if (file.ToLower().EndsWith(".wav") && LoadFromWav(reader))
 					Valid = true;
+
+				if (file.ToLower().EndsWith(".mp3") && LoadFromMp3(reader, file))
+					Valid = true;
+			}
 		}
 
-		private bool LoadFromWav(BinaryReader reader)
+		private bool LoadFromWav(BinaryReader reader, bool isFromMp3 = false)
 		{
 			const string Riff = "RIFF";
 			const string Wave = "WAVE";
@@ -58,6 +64,11 @@ namespace PixelEngine
 				return false;
 
 			const string Data = "data";
+
+			// Offset 2 characters to reach data.
+			// There are 2 extra chars while converting from mp3 for some reason ???
+			if (isFromMp3)           
+				reader.ReadChars(2); 
 
 			dump = reader.ReadChars(4); // Chunk header
 			long chunkSize = reader.ReadUInt32();
@@ -104,6 +115,21 @@ namespace PixelEngine
 						break;
 				}
 			}
+
+			return true;
+		}
+
+		private bool LoadFromMp3(BinaryReader reader, string file)
+		{
+			string fileName = Path.GetFileNameWithoutExtension(file);
+			string newFile = Path.Combine(Path.GetTempPath(), $"{nameof(PixelEngine)}.{Assembly.GetExecutingAssembly().GetName().Version}", $"{fileName}.wav");
+
+			if(!File.Exists(newFile))
+				ConvertToMp3(file, newFile);
+
+			using (Stream str = File.OpenRead(newFile))
+			using (BinaryReader br = new BinaryReader(str))
+				LoadFromWav(br, true);
 
 			return true;
 		}
@@ -160,7 +186,8 @@ namespace PixelEngine
 			if (samples == null)
 				samples = new List<Sound>();
 
-			Sound s = new Sound(file);
+			FileInfo fi = new FileInfo(file);
+			Sound s = new Sound(fi.FullName);
 			if (s.Valid)
 			{
 				samples.Add(s);
