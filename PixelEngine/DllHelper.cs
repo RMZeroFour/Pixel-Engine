@@ -15,7 +15,7 @@ namespace PixelEngine
 		{
 			Assembly assembly = Assembly.GetExecutingAssembly();
 
-			string dirName = Path.Combine(Path.GetTempPath(), $"{nameof(PixelEngine)}.{assembly.GetName().Version.ToString()}");
+			string dirName = TempPath;
 
 			if (!Directory.Exists(dirName))
 				Directory.CreateDirectory(dirName);

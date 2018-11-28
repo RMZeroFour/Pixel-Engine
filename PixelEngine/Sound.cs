@@ -122,7 +122,7 @@ namespace PixelEngine
 		private bool LoadFromMp3(BinaryReader reader, string file)
 		{
 			string fileName = Path.GetFileNameWithoutExtension(file);
-			string newFile = Path.Combine(Path.GetTempPath(), $"{nameof(PixelEngine)}.{Assembly.GetExecutingAssembly().GetName().Version}", $"{fileName}.wav");
+			string newFile = Path.Combine(TempPath, $"{fileName}.wav");
 
 			if(!File.Exists(newFile))
 				ConvertToMp3(file, newFile);

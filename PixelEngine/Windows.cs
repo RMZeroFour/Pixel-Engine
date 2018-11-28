@@ -1,11 +1,19 @@
 ﻿using System;
+using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace PixelEngine
 {
 	internal static unsafe class Windows
 	{
-		static Windows() => DllHelper.LoadDll();
+		public static readonly string TempPath;
+
+		static Windows()
+		{
+			DllHelper.LoadDll();
+			TempPath = Path.Combine(Path.GetTempPath(), $"{nameof(PixelEngine)}.{Assembly.GetExecutingAssembly().GetName().Version}");
+		}
 
 		#region Constants
 		public const int DoubleClicks = 0x8;
