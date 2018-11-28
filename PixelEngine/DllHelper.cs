@@ -11,16 +11,13 @@ namespace PixelEngine
 	{
 		private const string DllName = "PixGL.dll";
 
+		private static IntPtr dllHandle;
+
 		public static void LoadDll()
 		{
 			Assembly assembly = Assembly.GetExecutingAssembly();
 
-			string dirName = TempPath;
-
-			if (!Directory.Exists(dirName))
-				Directory.CreateDirectory(dirName);
-
-			string dllPath = Path.Combine(dirName, DllName);
+			string dllPath = Path.Combine(TempPath, DllName);
 
 			using (Stream stream = assembly.GetManifestResourceStream($"{nameof(PixelEngine)}.Properties.{DllName}"))
 			{
@@ -46,7 +43,9 @@ namespace PixelEngine
 				catch { }
 			}
 
-			IntPtr h = LoadLibrary(dllPath);
+			dllHandle = LoadLibrary(dllPath);
 		}
+
+		public static void DestroyDll() => FreeLibrary(dllHandle);
 	}
 }

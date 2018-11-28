@@ -198,6 +198,8 @@ namespace PixelEngine
 			canvas.Destroy();
 
 			PostMessage(Handle, (uint)WM.DESTROY, IntPtr.Zero, IntPtr.Zero);
+
+			DestroyTempPath();
 		}
 		private void HandleMouse()
 		{

@@ -11,8 +11,26 @@ namespace PixelEngine
 
 		static Windows()
 		{
-			DllHelper.LoadDll();
 			TempPath = Path.Combine(Path.GetTempPath(), $"{nameof(PixelEngine)}.{Assembly.GetExecutingAssembly().GetName().Version}");
+
+			if (!Directory.Exists(TempPath))
+				Directory.CreateDirectory(TempPath);
+
+			DllHelper.LoadDll();
+		}
+
+		public static void DestroyTempPath()
+		{
+			DllHelper.DestroyDll();
+
+			if (Directory.Exists(TempPath))
+			{
+				foreach (string file in Directory.EnumerateFiles(TempPath))
+				{
+					if(!file.EndsWith(".dll"))
+						File.Delete(file);
+				}
+			}
 		}
 
 		#region Constants
@@ -639,6 +657,9 @@ namespace PixelEngine
 
 		[DllImport(Kernel, CharSet = CharSet.Auto)]
 		public static extern IntPtr LoadLibrary(string lpLibraryName);
+
+		[DllImport(Kernel, CharSet = CharSet.Auto)]
+		public static extern bool FreeLibrary(IntPtr hLibModule);
 		#endregion
 
 		#region Winmm
