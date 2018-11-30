@@ -23,7 +23,8 @@ namespace PixelEngine
 		{
 			Normal,
 			Mask,
-			Alpha
+			Alpha,
+			Custom
 		}
 
 		public static Pixel Random()

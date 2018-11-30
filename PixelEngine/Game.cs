@@ -45,6 +45,15 @@ namespace PixelEngine
 				return audio.GlobalTime;
 			}
 		}
+		protected Shader Shader
+		{
+			get => shader;
+			set
+			{
+				shader = value;
+				PixelMode = shader != null ? Pixel.Mode.Custom : Pixel.Mode.Normal;
+			}
+		}
 		protected Sprite DrawTarget
 		{
 			get => drawTarget;
@@ -93,6 +102,7 @@ namespace PixelEngine
 
 		private bool delaying;
 		private float delayTime;
+		private Shader shader;
 		private readonly Button[] keyboard = new Button[256];
 		private readonly bool[] newKeyboard = new bool[256];
 		private readonly bool[] oldKeyboard = new bool[256];
@@ -382,7 +392,18 @@ namespace PixelEngine
 			return mouse[(int)m];
 		}
 
-		protected Pixel GetScreenPixel(int x, int y) => DrawTarget[x, y];
+		protected Pixel GetScreenPixel(int x, int y) => defDrawTarget[x, y];
+		protected Pixel[,] GetScreenPixels()
+		{
+			Pixel[,] screen = new Pixel[ScreenWidth, ScreenHeight];
+			for (int i = 0; i < ScreenWidth* ScreenHeight; i++)
+			{
+				int x = i % ScreenWidth;
+				int y = i / ScreenWidth;
+				screen[x, y] = defDrawTarget[x, y];
+			}
+			return screen;
+		}
 		#endregion
 
 		#region Math
@@ -594,6 +615,9 @@ namespace PixelEngine
 					Pixel pix = new Pixel((byte)r, (byte)g, (byte)b);
 					MakePixel(p.X, p.Y, pix);
 					break;
+				case Pixel.Mode.Custom:
+					MakePixel(p.X, p.Y, Shader.Calculate(p.X, p.Y, drawTarget[p.X, p.Y], col));
+					break;
 			}
 		}
 		public void DrawLine(Point p1, Point p2, Pixel col)
@@ -716,6 +740,17 @@ namespace PixelEngine
 			DrawLine(new Point(p.X + w, p.Y + h), new Point(p.X, p.Y + h), col);
 			DrawLine(new Point(p.X, p.Y + h), new Point(p.X, p.Y), col);
 		}
+		public void DrawRect(Point p1, Point p2, Pixel col)
+		{
+			if (p1.X > p2.X && p1.Y > p2.Y)
+			{
+				Point temp = p1;
+				p1 = p2;
+				p2 = temp;
+			}
+
+			DrawRect(p1, Math.Abs(p2.X - p1.X - 1), Math.Abs(p2.Y - p1.Y - 1), col);
+		}
 		public void FillRect(Point p, int w, int h, Pixel col)
 		{
 			int Clip(int val, int min, int max)
@@ -739,6 +774,17 @@ namespace PixelEngine
 			for (int i = p.X; i < x2; i++)
 				for (int j = p.Y; j < y2; j++)
 					Draw(i, j, col);
+		}
+		public void FillRect(Point p1, Point p2, Pixel col)
+		{
+			if (p1.X > p2.X && p1.Y > p2.Y)
+			{
+				Point temp = p1;
+				p1 = p2;
+				p2 = temp;
+			}
+
+			FillRect(p1, Math.Abs(p2.X - p1.X - 1), Math.Abs(p2.Y - p1.Y - 1), col);
 		}
 		public void DrawTriangle(Point p1, Point p2, Point p3, Pixel col)
 		{

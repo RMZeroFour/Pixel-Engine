@@ -57,6 +57,7 @@
     <Compile Include="Randoms.cs" />
     <Compile Include="Sound.cs" />
     <Compile Include="Sprite.cs" />
+    <Compile Include="Utilities\Shader.cs" />
     <Compile Include="Utilities\States.cs" />
     <Compile Include="Utilities\Clock.cs" />
     <Compile Include="Timer.cs" />
