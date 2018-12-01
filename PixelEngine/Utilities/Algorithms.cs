@@ -8,6 +8,31 @@ namespace PixelEngine.Utilities
 {
 	public static class Algorithms
 	{
+		public static T[] Concat<T>(params T[][] items)
+		{
+			T[] result = new T[items.Sum(t => t.Length)];
+
+			int counter = 0;
+
+			foreach (T[] item in items)
+				foreach (T t in item)
+					result[counter++] = t;
+
+			return result;
+		}
+		public static List<T> Concat<T>(params List<T>[] items)
+		{
+			List<T> result = new List<T>(items.Sum(t => t.Count));
+
+			int counter = 0;
+
+			foreach (List<T> item in items)
+				foreach (T t in item)
+					result[counter++] = t;
+
+			return result;
+		}
+
 		public static void Sort<T>(this T[] items) => Sort(items, Comparer<T>.Default.Compare);
 		public static void Sort<T>(this List<T> items) => Sort(items, Comparer<T>.Default.Compare);
 		public static void Sort<T>(this T[] items, Comparison<T> comparision)

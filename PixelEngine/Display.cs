@@ -42,7 +42,7 @@ namespace PixelEngine
 		internal Rect ClientRect { get; set; }
 
 		// Handle of the window
-		protected internal IntPtr Handle { get; protected set; }
+		internal IntPtr Handle { get; set; }
 
 		// Assign the window details
 		internal void Construct(int width = 100, int height = 100, int pixWidth = 5, int pixHeight = 5)

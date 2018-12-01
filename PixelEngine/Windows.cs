@@ -760,7 +760,7 @@ namespace PixelEngine
 		public unsafe static extern int SetPixelFormat(IntPtr hDC, int iPixelFormat, [In] ref PixelFormatDesc ppfd);
 
 		[DllImport(Gdi, SetLastError = true)]
-		public static extern int SwapBuffers(IntPtr hDC);
+		public static extern bool SwapBuffers(IntPtr hDC);
 		#endregion
 
 		#endregion
