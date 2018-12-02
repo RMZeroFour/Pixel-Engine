@@ -64,6 +64,7 @@ namespace PixelEngine
 			ph = game.PixHeight * wh;
 
 			SetValues(pw, ph, ww, wh);
+			CreateCoords(game.PixWidth, game.PixHeight, game.ScreenWidth, game.ScreenHeight);
 		}
 
 		public unsafe void Draw(Sprite drawTarget, Sprite textTarget)
@@ -80,13 +81,17 @@ namespace PixelEngine
 
 			if (textTarget != null)
 				fixed (Pixel* ptr = textTarget.GetData())
-					RenderText(textTarget.Width, textTarget.Height, ptr);
+					RenderText(game.windowWidth, game.windowHeight, textTarget.Width, textTarget.Height, ptr);
 
 			SwapBuffers(deviceContext);
 
 			ReleaseDC(game.Handle, deviceContext);
 		}
 
-		public void Destroy() => WglDeleteContext(renderContext);
+		public void Destroy()
+		{
+			WglDeleteContext(renderContext);
+			DestroyCoords();
+		}
 	}
 }

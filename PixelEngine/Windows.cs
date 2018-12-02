@@ -681,13 +681,19 @@ namespace PixelEngine
 		public static extern void SetValues(float pw, float ph, float ww, float wh);
 
 		[DllImport(PixGl, CallingConvention = CallingConvention.Cdecl)]
+		public static extern void CreateCoords(int pixW, int pixH, int scrW, int scrH);
+
+		[DllImport(PixGl, CallingConvention = CallingConvention.Cdecl)]
+		public static extern void DestroyCoords();
+
+		[DllImport(PixGl, CallingConvention = CallingConvention.Cdecl)]
 		public unsafe static extern void RenderUnitPixels(int width, int height, Pixel* pixels);
 
 		[DllImport(PixGl, CallingConvention = CallingConvention.Cdecl)]
 		public unsafe static extern void RenderPixels(int width, int height, Pixel* pixels);
 
 		[DllImport(PixGl, CallingConvention = CallingConvention.Cdecl)]
-		public unsafe static extern void RenderText(int width, int height, Pixel* pixels);
+		public unsafe static extern void RenderText(int scrW, int scrH, int width, int height, Pixel* pixels);
 
 		#region PixMp3
 		[DllImport(PixGl, CallingConvention = CallingConvention.Cdecl, EntryPoint = "Convert")]
