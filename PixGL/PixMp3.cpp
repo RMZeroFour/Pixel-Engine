@@ -1,3 +1,5 @@
+// Taken and modified from https://docs.microsoft.com/en-us/windows/desktop/medfound/tutorial--decoding-audio  
+
 #define WINVER _WIN32_WINNT_WIN7
 
 #ifndef _UNICODE
@@ -397,11 +399,7 @@ HRESULT WriteWaveFile(IMFSourceReader *pReader, HANDLE hFile, LONG msecAudioData
 PixMp3 bool Convert(WCHAR *wszSourceFile, WCHAR *wszTargetFile)
 {
 	HeapSetInformation(NULL, HeapEnableTerminationOnCorruption, NULL, 0);
-
-	//const WCHAR *wszSourceFile = /*argv[1]*/ L"C:\\Users\\dell\\Desktop\\Rain.mp3";
-	//const WCHAR *wszTargetFile = /*argv[2]*/ L"C:\\Users\\dell\\Desktop\\RainToWav.wav";
-
-	const LONG MAX_AUDIO_DURATION_MSEC = ULLONG_MAX; // 500 seconds
+        const LONG MAX_AUDIO_DURATION_MSEC = ULLONG_MAX; // 500 seconds
 
 	HRESULT hr = S_OK;
 
