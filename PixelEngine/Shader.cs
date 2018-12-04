@@ -1,4 +1,4 @@
-﻿namespace PixelEngine.Utilities
+﻿namespace PixelEngine
 {
 	public class Shader
 	{

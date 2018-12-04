@@ -52,14 +52,13 @@
     <Compile Include="Game.cs" />
     <Compile Include="Utilities\Noise.cs" />
     <Compile Include="OpenGL.cs" />
-    <Compile Include="Utilities\Pattern.cs" />
     <Compile Include="Pixel.cs" />
     <Compile Include="Point.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Randoms.cs" />
     <Compile Include="Sound.cs" />
     <Compile Include="Sprite.cs" />
-    <Compile Include="Utilities\Shader.cs" />
+    <Compile Include="Shader.cs" />
     <Compile Include="Utilities\States.cs" />
     <Compile Include="Utilities\Clock.cs" />
     <Compile Include="Timer.cs" />

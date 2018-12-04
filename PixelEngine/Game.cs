@@ -1058,10 +1058,13 @@ namespace PixelEngine
 				return;
 
 			Pixel.Mode prev = PixelMode;
-			if (col.A != 255)
-				PixelMode = Pixel.Mode.Alpha;
-			else
-				PixelMode = Pixel.Mode.Mask;
+			if (PixelMode != Pixel.Mode.Custom)
+			{
+				if (col.A != 255)
+					PixelMode = Pixel.Mode.Alpha;
+				else
+					PixelMode = Pixel.Mode.Mask;
+			}
 
 			int sx = 0;
 			int sy = 0;
@@ -1098,7 +1101,8 @@ namespace PixelEngine
 				}
 			}
 
-			PixelMode = prev;
+			if(PixelMode != Pixel.Mode.Custom)
+				PixelMode = prev;
 		}
 		public void DrawTextHr(Point p, string text, Pixel col, int scale = 1)
 		{
