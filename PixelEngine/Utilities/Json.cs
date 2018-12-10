@@ -241,7 +241,7 @@ namespace PixelEngine.Utilities
 
 					List<string> parts = new List<string>();
 
-					int depth = 0;
+					int level = 0;
 
 					for (int i = 0; i < text.Length; i++)
 					{
@@ -249,12 +249,17 @@ namespace PixelEngine.Utilities
 						{
 							case '[':
 							case '{':
-								depth++;
+								level++;
 								break;
 
-							case ']':
-							case '}':
-								depth--;
+							case ',':
+							case ':':
+								if (level == 0)
+								{
+									parts.Add(sb.ToString());
+									sb.Clear();
+									continue;
+								}
 								break;
 
 							case '"':
@@ -264,14 +269,9 @@ namespace PixelEngine.Utilities
 								sb.Append('"');
 								continue;
 
-							case ',':
-							case ':':
-								if (depth == 0)
-								{
-									parts.Add(sb.ToString());
-									sb.Clear();
-									continue;
-								}
+							case ']':
+							case '}':
+								level--;
 								break;
 						}
 

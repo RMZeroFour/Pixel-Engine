@@ -15,13 +15,14 @@ namespace PixelEngine
 	public abstract class Game : Display
 	{
 		#region Members
+		public int MouseX { get; private set; }
+		public int MouseY { get; private set; }
+
 		protected Pixel.Mode PixelMode { get; set; } = Pixel.Mode.Normal;
 		protected float PixelBlend { get => pixBlend; set => pixBlend = Constrain(value, 0, 1); }
 		protected long FrameCount { get; private set; }
 		protected bool Focus { get; private set; }
 		protected int FrameRate { get; private set; }
-		protected int MouseX { get; private set; }
-		protected int MouseY { get; private set; }
 		protected Scroll MouseScroll { get; private set; }
 		protected Clock Clock { get; private set; }
 		protected float Volume
@@ -36,7 +37,7 @@ namespace PixelEngine
 					audio.Volume = Constrain(value, 0, 1);
 			}
 		}
-		public float AudioTime
+		protected float AudioTime
 		{
 			get
 			{
@@ -362,6 +363,23 @@ namespace PixelEngine
 
 		#region Helpers
 		#region Engine
+		public Button GetKey(Key k)
+		{
+			if (k == Key.Any)
+				return anyKey;
+			if (k == Key.None)
+				return noneKey;
+			return keyboard[(int)k];
+		}
+		public Button GetMouse(Mouse m)
+		{
+			if (m == Mouse.Any)
+				return anyMouse;
+			if (m == Mouse.None)
+				return noneMouse;
+			return mouse[(int)m];
+		}
+
 		protected void Delay(float time)
 		{
 			if (!delaying)
@@ -375,25 +393,8 @@ namespace PixelEngine
 		protected void NoLoop() => paused = true;
 		protected void Loop() => paused = false;
 
-		protected Button GetKey(Key k)
-		{
-			if (k == Key.Any)
-				return anyKey;
-			if (k == Key.None)
-				return noneKey;
-			return keyboard[(int)k];
-		}
-		protected Button GetMouse(Mouse m)
-		{
-			if (m == Mouse.Any)
-				return anyMouse;
-			if (m == Mouse.None)
-				return noneMouse;
-			return mouse[(int)m];
-		}
-
 		protected Pixel GetScreenPixel(int x, int y) => defDrawTarget[x, y];
-		protected Pixel[,] GetScreenPixels()
+		protected Pixel[,] GetScreen()
 		{
 			Pixel[,] screen = new Pixel[ScreenWidth, ScreenHeight];
 			for (int i = 0; i < ScreenWidth* ScreenHeight; i++)
