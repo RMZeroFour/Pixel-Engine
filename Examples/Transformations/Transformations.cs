@@ -1,5 +1,5 @@
 using PixelEngine;
-using PixelEngine.Extensions;
+using PixelEngine.Extensions.Transforms;
 
 namespace Examples
 {

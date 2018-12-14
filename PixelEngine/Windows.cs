@@ -16,12 +16,12 @@ namespace PixelEngine
 			if (!Directory.Exists(TempPath))
 				Directory.CreateDirectory(TempPath);
 
-			DllHelper.LoadDll();
+			ResxHelper.LoadDll();
 		}
 
 		public static void DestroyTempPath()
 		{
-			DllHelper.DestroyDll();
+			ResxHelper.DestroyDll();
 
 			if (Directory.Exists(TempPath))
 			{

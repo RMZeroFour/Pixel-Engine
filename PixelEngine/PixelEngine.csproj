@@ -40,6 +40,7 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Font.cs" />
     <Compile Include="Utilities\Animation.cs" />
     <Compile Include="Extensions\Extension.cs" />
     <Compile Include="Utilities\Json.cs" />
@@ -47,7 +48,7 @@
     <Compile Include="Utilities\Algorithms.cs" />
     <Compile Include="Button.cs" />
     <Compile Include="Display.cs" />
-    <Compile Include="DllHelper.cs" />
+    <Compile Include="ResxHelper.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="Utilities\Noise.cs" />
@@ -74,7 +75,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Properties\Formal.dat" />
+    <EmbeddedResource Include="Properties\Modern.dat" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Formal.png" />
+    <EmbeddedResource Include="Properties\Modern.png" />
     <EmbeddedResource Include="Properties\PixGL.dll" />
+    <EmbeddedResource Include="Properties\Retro.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

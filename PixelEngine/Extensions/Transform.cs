@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PixelEngine.Extensions
+namespace PixelEngine.Extensions.Transforms
 {
 	public class Transform : Extension
 	{

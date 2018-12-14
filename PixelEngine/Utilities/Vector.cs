@@ -24,11 +24,8 @@ namespace PixelEngine.Utilities
 		}
 
 		#region Calculations
-		public float Magnitude()
-		{
-			float length = X * X + Y * Y + Z * Z;
-			return (float)Math.Sqrt(length);
-		}
+		public float Magnitude() => Magnitude(this);
+		public Vector Normalize() => Normalize(this);
 
 		public static float Distance(Vector a, Vector b)
 		{
@@ -46,7 +43,7 @@ namespace PixelEngine.Utilities
 			float length = v.X * v.X + v.Y * v.Y + v.Z * v.Z;
 			float invDiv = (float)(1 / Math.Sqrt(length));
 
-			return new Vector(v.X * invDiv, v.Y * invDiv);
+			return new Vector(v.X * invDiv, v.Y * invDiv, v.Z * invDiv);
 		}
 
 		public static Vector Reflect(Vector v, Vector normal)
@@ -89,9 +86,17 @@ namespace PixelEngine.Utilities
 			return new Vector(x, y, z);
 		}
 
+		public static float Magnitude(Vector v)
+		{
+			float length = v.X * v.X + v.Y * v.Y + v.Z * v.Z;
+			return (float)Math.Sqrt(length);
+		}
+
 		public static float Dot(Vector a, Vector b) => (a.X * b.X) + (a.Y * b.Y) + (a.Z * b.Z);
 
-		private bool Intersect(Vector s1, Vector e1, Vector s2, Vector e2)
+		public static float Angle(Vector a, Vector b) => (float)Math.Acos(Dot(a, b) / (Magnitude(a) * Magnitude(b)));
+
+		public static bool Intersect(Vector s1, Vector e1, Vector s2, Vector e2)
 		{
 			bool OnSegment(Vector p, Vector q, Vector r)
 			{
@@ -132,18 +137,17 @@ namespace PixelEngine.Utilities
 		#endregion
 
 		#region Operators
+		public static Vector operator +(Vector a, float b) => new Vector(a.X + b, a.Y + b, a.Z + b);
 		public static Vector operator +(Vector a, Vector b) => new Vector(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
 
+		public static Vector operator -(Vector a, float b) => new Vector(a.X - b, a.Y - b, a.Z - b);
 		public static Vector operator -(Vector a, Vector b) => new Vector(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
 
 		public static Vector operator *(Vector a, Vector b) => new Vector(a.X * b.X, a.Y * b.Y, a.Z * b.Z);
-
-		public static Vector operator *(float f, Vector v) => new Vector(v.X * f, v.Y * f, v.Z * f);
-
-		public static Vector operator *(Vector v, float f) => v * f;
+		public static Vector operator *(Vector v, float f) => new Vector(v.X * f, v.Y * f, v.Z * f);
+		public static Vector operator *(float f, Vector v) => v * f;
 
 		public static Vector operator /(Vector a, Vector b) => new Vector(a.X / b.X, a.Y / b.Y, a.Z / b.Z);
-
 		public static Vector operator /(Vector v, float f)
 		{
 			float invDiv = 1 / f;

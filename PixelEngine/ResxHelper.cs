@@ -7,23 +7,34 @@ using static PixelEngine.Windows;
 
 namespace PixelEngine
 {
-	internal static class DllHelper
+	internal static class ResxHelper
 	{
 		private const string DllName = "PixGL.dll";
 
 		private static IntPtr dllHandle;
 
-		public static void LoadDll()
+		public static void LoadDll() => dllHandle = LoadLibrary(LoadFile(DllName));
+
+		public static void LoadFonts()
+		{
+			LoadFile("Retro.png");
+			LoadFile("Modern.png");
+			LoadFile("Formal.png");
+			LoadFile("Modern.dat");
+			LoadFile("Formal.dat");
+		}
+
+		private static string LoadFile(string file)
 		{
 			Assembly assembly = Assembly.GetExecutingAssembly();
 
-			string dllPath = Path.Combine(TempPath, DllName);
+			string path = Path.Combine(TempPath, file);
 
-			using (Stream stream = assembly.GetManifestResourceStream($"{nameof(PixelEngine)}.Properties.{DllName}"))
+			using (Stream stream = assembly.GetManifestResourceStream($"{nameof(PixelEngine)}.Properties.{file}"))
 			{
 				try
 				{
-					using (Stream outFile = File.Create(dllPath))
+					using (Stream outFile = File.Create(path))
 					{
 						const int Size = 4096;
 
@@ -43,7 +54,7 @@ namespace PixelEngine
 				catch { }
 			}
 
-			dllHandle = LoadLibrary(dllPath);
+			return path;
 		}
 
 		public static void DestroyDll() => FreeLibrary(dllHandle);

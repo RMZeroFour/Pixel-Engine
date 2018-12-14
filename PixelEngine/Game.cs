@@ -17,8 +17,19 @@ namespace PixelEngine
 		#region Members
 		public int MouseX { get; private set; }
 		public int MouseY { get; private set; }
+		public override string AppName
+		{
+			get => base.AppName;
+			protected set
+			{
+				base.AppName = value;
+				if (Handle != IntPtr.Zero)
+					SetWindowText(Handle, AppName);
+			}
+		}
 
 		protected Pixel.Mode PixelMode { get; set; } = Pixel.Mode.Normal;
+		protected Font Font { get; set; }
 		protected float PixelBlend { get => pixBlend; set => pixBlend = Constrain(value, 0, 1); }
 		protected long FrameCount { get; private set; }
 		protected bool Focus { get; private set; }
@@ -61,17 +72,6 @@ namespace PixelEngine
 			set => drawTarget = value ?? defDrawTarget;
 		}
 
-		public override string AppName
-		{
-			get => base.AppName;
-			protected set
-			{
-				base.AppName = value;
-				if (Handle != IntPtr.Zero)
-					SetWindowText(Handle, AppName);
-			}
-		}
-
 		private Thread gameLoop;
 
 		private AudioEngine audio;
@@ -93,8 +93,6 @@ namespace PixelEngine
 		private Sprite drawTarget;
 		private Sprite textTarget;
 		private Sprite defDrawTarget;
-
-		private Sprite fontSprite;
 
 		private Button anyKey;
 		private Button noneKey;
@@ -139,7 +137,7 @@ namespace PixelEngine
 				frameTimer = new Timer(1000.0f / FrameRate);
 			}
 
-			ConstructFontSheet();
+			Font = Font.Presets.Retro;
 			HandleDrawTarget();
 		}
 		private void GameLoop()
@@ -473,48 +471,6 @@ namespace PixelEngine
 		{
 			MouseX = (int)x / PixWidth;
 			MouseY = (int)y / PixHeight;
-		}
-		private void ConstructFontSheet()
-		{
-			StringBuilder data = new StringBuilder(1024);
-			data.Append("?Q`0001oOch0o01o@F40o0<AGD4090LAGD<090@A7ch0?00O7Q`0600>00000000");
-			data.Append("O000000nOT0063Qo4d8>?7a14Gno94AA4gno94AaOT0>o3`oO400o7QN00000400");
-			data.Append("Of80001oOg<7O7moBGT7O7lABET024@aBEd714AiOdl717a_=TH013Q>00000000");
-			data.Append("720D000V?V5oB3Q_HdUoE7a9@DdDE4A9@DmoE4A;Hg]oM4Aj8S4D84@`00000000");
-			data.Append("OaPT1000Oa`^13P1@AI[?g`1@A=[OdAoHgljA4Ao?WlBA7l1710007l100000000");
-			data.Append("ObM6000oOfMV?3QoBDD`O7a0BDDH@5A0BDD<@5A0BGeVO5ao@CQR?5Po00000000");
-			data.Append("Oc``000?Ogij70PO2D]??0Ph2DUM@7i`2DTg@7lh2GUj?0TO0C1870T?00000000");
-			data.Append("70<4001o?P<7?1QoHg43O;`h@GT0@:@LB@d0>:@hN@L0@?aoN@<0O7ao0000?000");
-			data.Append("OcH0001SOglLA7mg24TnK7ln24US>0PL24U140PnOgl0>7QgOcH0K71S0000A000");
-			data.Append("00H00000@Dm1S007@DUSg00?OdTnH7YhOfTL<7Yh@Cl0700?@Ah0300700000000");
-			data.Append("<008001QL00ZA41a@6HnI<1i@FHLM81M@@0LG81?O`0nC?Y7?`0ZA7Y300080000");
-			data.Append("O`082000Oh0827mo6>Hn?Wmo?6HnMb11MP08@C11H`08@FP0@@0004@000000000");
-			data.Append("00P00001Oab00003OcKP0006@6=PMgl<@440MglH@000000`@000001P00000000");
-			data.Append("Ob@8@@00Ob@8@Ga13R@8Mga172@8?PAo3R@827QoOb@820@0O`0007`0000007P0");
-			data.Append("O`000P08Od400g`<3V=P0G`673IP0`@3>1`00P@6O`P00g`<O`000GP800000000");
-			data.Append("?P9PL020O`<`N3R0@E4HC7b0@ET<ATB0@@l6C4B0O`H3N7b0?P01L3R000000020");
-
-			fontSprite = new Sprite(128, 48);
-			int px = 0, py = 0;
-			for (int b = 0; b < 1024; b += 4)
-			{
-				uint sym1 = (uint)data[b + 0] - 48;
-				uint sym2 = (uint)data[b + 1] - 48;
-				uint sym3 = (uint)data[b + 2] - 48;
-				uint sym4 = (uint)data[b + 3] - 48;
-				uint r = sym1 << 18 | sym2 << 12 | sym3 << 6 | sym4;
-
-				for (int i = 0; i < 24; i++)
-				{
-					Pixel p = (r & (1 << i)) != 0 ? Pixel.Presets.White : Pixel.Presets.Black;
-					fontSprite[px, py] = p;
-					if (++py == 48)
-					{
-						px++;
-						py = 0;
-					}
-				}
-			}
 		}
 		private protected override void CreateWindow()
 		{
@@ -1075,30 +1031,18 @@ namespace PixelEngine
 				if (c == '\n')
 				{
 					sx = 0;
-					sy += 8 * scale;
+					sy += Font.CharHeight * scale;
 				}
 				else
 				{
-					int ox = (c - 32) % 16;
-					int oy = (c - 32) / 16;
+					Sprite cur = Font.Glyphs[c];
 
-					if (scale > 1)
-					{
-						for (int i = 0; i < 8; i++)
-							for (int j = 0; j < 8; j++)
-								if (fontSprite[i + ox * 8, j + oy * 8].R > 0)
-									for (int ni = 0; ni < scale; ni++)
-										for (int nj = 0; nj < scale; nj++)
-											Draw(p.X + sx + i * scale + ni, p.Y + sy + j * scale + nj, col);
-					}
-					else
-					{
-						for (int i = 0; i < 8; i++)
-							for (int j = 0; j < 8; j++)
-								if (fontSprite[i + ox * 8, j + oy * 8].R > 0)
-									Draw(p.X + sx + i, p.Y + sy + j, col);
-					}
-					sx += 8 * scale;
+					for (int x = 0; x < cur.Width; x++)
+						for (int y = 0; y < cur.Height; y++)
+							if (cur[x, y].R > 0)
+								Draw(p.X + sx + x, p.Y + sy + y, col);
+
+					sx += cur.Width;
 				}
 			}
 
@@ -1170,35 +1114,24 @@ namespace PixelEngine
 			int sx = 0;
 			int sy = 0;
 
+			int offset = 0;
 			foreach (char c in text)
 			{
 				if (c == '\n')
 				{
 					sx = 0;
-					sy += 8 * scale;
+					sy += Font.CharHeight * scale;
 				}
 				else
 				{
-					int ox = (c - 32) % 16;
-					int oy = (c - 32) / 16;
+					Sprite cur = Font.Glyphs[c];
 
-					if (scale > 1)
-					{
-						for (int i = 0; i < 8; i++)
-							for (int j = 0; j < 8; j++)
-								if (fontSprite[i + ox * 8, j + oy * 8].R > 0)
-									for (int ni = 0; ni < scale; ni++)
-										for (int nj = 0; nj < scale; nj++)
-											SetPixel(p.X + sx + i * scale + ni, p.Y + sy + j * scale + nj);
-					}
-					else
-					{
-						for (int i = 0; i < 8; i++)
-							for (int j = 0; j < 8; j++)
-								if (fontSprite[i + ox * 8, j + oy * 8].R > 0)
-									SetPixel(p.X + sx + i, p.Y + sy + j);
-					}
-					sx += 8 * scale;
+					for (int x = 0; x < cur.Width; x++)
+						for (int y = 0; y < cur.Height; y++)
+							if (cur[x, y].R > 0)
+								SetPixel(p.X + offset + x, p.Y + y);
+
+					offset += cur.Width;
 				}
 			}
 		}
