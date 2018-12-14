@@ -60,7 +60,7 @@ There are many examples present in the [Examples](https://github.com/DevChrome/P
 
 ## Deployment
 
-Add additional notes about how to deploy this on a live system
+Build your projects with this as a reference and run the generated .exe file.
 
 ## Built With
 
