@@ -84,5 +84,11 @@
     <EmbeddedResource Include="Properties\PixGL.dll" />
     <EmbeddedResource Include="Properties\Retro.png" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Handwritten.dat" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Handwritten.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

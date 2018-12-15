@@ -20,6 +20,7 @@ namespace PixelEngine
 			retro = new Lazy<Font>(CreateRetro);
 			modern = new Lazy<Font>(CreateModern);
 			formal = new Lazy<Font>(CreateFormal);
+			handwritten = new Lazy<Font>(CreateHandwritten);
 		}
 
 		#region Presets
@@ -57,6 +58,9 @@ namespace PixelEngine
 			using (FileStream stream = File.OpenRead(Windows.TempPath + "\\Modern.dat"))
 			using (BinaryReader reader = new BinaryReader(stream))
 			{
+				reader.ReadBytes(16); // Offset 16 + 32
+				reader.ReadBytes(33); // bytes into data
+
 				byte[] widths = reader.ReadBytes(96); // widths of 96 ascii chars
 
 				for (char cur = ' '; cur < 128; cur++)
@@ -88,6 +92,43 @@ namespace PixelEngine
 			using (FileStream stream = File.OpenRead(Windows.TempPath + "\\Formal.dat"))
 			using (BinaryReader reader = new BinaryReader(stream))
 			{
+				reader.ReadBytes(16); // Offset 16 + 32
+				reader.ReadBytes(33); // bytes into data
+
+				byte[] widths = reader.ReadBytes(96); // widths of 96 ascii chars
+
+				for (char cur = ' '; cur < 128; cur++)
+				{
+					byte w = widths[cur - 32];
+					Sprite fontChar = new Sprite(w, 21);
+
+					int x = (cur - 32) % 16;
+					int y = (cur - 32) / 16;
+
+					for (int i = 0; i < w; i++)
+						for (int j = 0; j < 21; j++)
+							fontChar[i, j] = spr[x * 16 + i, y * 21 + j];
+
+					f.Glyphs.Add(cur, fontChar);
+				}
+			}
+
+			return f;
+		}
+
+		private static Font CreateHandwritten()
+		{
+			Font f = new Font();
+			f.CharHeight = 21;
+
+			Sprite spr = Sprite.Load(Windows.TempPath + "\\Handwritten.png");
+
+			using (FileStream stream = File.OpenRead(Windows.TempPath + "\\Handwritten.dat"))
+			using (BinaryReader reader = new BinaryReader(stream))
+			{
+				reader.ReadBytes(16); // Offset 16 + 32
+				reader.ReadBytes(33); // bytes into data
+
 				byte[] widths = reader.ReadBytes(96); // widths of 96 ascii chars
 
 				for (char cur = ' '; cur < 128; cur++)
@@ -112,12 +153,14 @@ namespace PixelEngine
 		private static readonly Lazy<Font> retro;
 		private static readonly Lazy<Font> modern;
 		private static readonly Lazy<Font> formal;
+		private static readonly Lazy<Font> handwritten;
 
 		public enum Presets
 		{
 			Retro,
 			Modern,
-			Formal
+			Formal,
+			Handwritten
 		}
 
 		public static implicit operator Font(Presets p)
@@ -130,6 +173,8 @@ namespace PixelEngine
 					return modern.Value;
 				case Presets.Formal:
 					return formal.Value;
+				case Presets.Handwritten:
+					return handwritten.Value;
 			}
 
 			return null;

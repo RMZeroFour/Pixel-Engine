@@ -20,8 +20,11 @@ namespace PixelEngine
 			LoadFile("Retro.png");
 			LoadFile("Modern.png");
 			LoadFile("Formal.png");
+			LoadFile("Handwritten.png");
+
 			LoadFile("Modern.dat");
 			LoadFile("Formal.dat");
+			LoadFile("Handwritten.dat");
 		}
 
 		private static string LoadFile(string file)

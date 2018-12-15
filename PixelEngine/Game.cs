@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 
 using PixelEngine.Extensions;
@@ -1035,14 +1034,22 @@ namespace PixelEngine
 				}
 				else
 				{
-					Sprite cur = Font.Glyphs[c];
+					if (Font.Glyphs.TryGetValue(c, out Sprite cur))
+					{
 
-					for (int x = 0; x < cur.Width; x++)
-						for (int y = 0; y < cur.Height; y++)
-							if (cur[x, y].R > 0)
-								Draw(p.X + sx + x, p.Y + sy + y, col);
+						for (int x = 0; x < cur.Width; x++)
+							for (int y = 0; y < cur.Height; y++)
+								for (int ax = 0; ax < scale; ax++)
+									for (int ay = 0; ay < scale; ay++)
+										if (cur[x, y].R > 0)
+											Draw(p.X + sx + x + ax, p.Y + sy + y + ay, col);
 
-					sx += cur.Width;
+						sx += cur.Width;
+					}
+					else
+					{
+						sx += scale * 8;
+					}
 				}
 			}
 
@@ -1114,7 +1121,6 @@ namespace PixelEngine
 			int sx = 0;
 			int sy = 0;
 
-			int offset = 0;
 			foreach (char c in text)
 			{
 				if (c == '\n')
@@ -1124,14 +1130,21 @@ namespace PixelEngine
 				}
 				else
 				{
-					Sprite cur = Font.Glyphs[c];
+					if (Font.Glyphs.TryGetValue(c, out Sprite cur))
+					{
+						for (int x = 0; x < cur.Width; x++)
+							for (int y = 0; y < cur.Height; y++)
+								for (int ax = 0; ax < scale; ax++)
+									for (int ay = 0; ay < scale; ay++)
+										if (cur[x, y].R > 0)
+											SetPixel(p.X + sx + x + ax, p.Y + sy + y + ay);
 
-					for (int x = 0; x < cur.Width; x++)
-						for (int y = 0; y < cur.Height; y++)
-							if (cur[x, y].R > 0)
-								SetPixel(p.X + offset + x, p.Y + y);
-
-					offset += cur.Width;
+						sx += cur.Width;
+					}
+					else
+					{
+						sx += scale * 8;
+					}
 				}
 			}
 		}
