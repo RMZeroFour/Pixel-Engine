@@ -14,6 +14,12 @@ namespace PixelEngine
 
 		private Font() => Glyphs = new Dictionary<char, Sprite>();
 
+		internal Font(Dictionary<char, Sprite> glyphs)
+		{
+			Glyphs = glyphs;
+			CharHeight = glyphs.First().Value.Height;
+		}
+
 		static Font()
 		{
 			ResxHelper.LoadFonts();

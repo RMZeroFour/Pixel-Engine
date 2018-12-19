@@ -16,26 +16,15 @@ namespace PixelEngine
 		#region Members
 		public int MouseX { get; private set; }
 		public int MouseY { get; private set; }
-		public override string AppName
-		{
-			get => base.AppName;
-			protected set
-			{
-				base.AppName = value;
-				if (Handle != IntPtr.Zero)
-					SetWindowText(Handle, AppName);
-			}
-		}
-
-		protected Pixel.Mode PixelMode { get; set; } = Pixel.Mode.Normal;
-		protected Font Font { get; set; }
-		protected float PixelBlend { get => pixBlend; set => pixBlend = Constrain(value, 0, 1); }
-		protected long FrameCount { get; private set; }
-		protected bool Focus { get; private set; }
-		protected int FrameRate { get; private set; }
-		protected Scroll MouseScroll { get; private set; }
-		protected Clock Clock { get; private set; }
-		protected float Volume
+		public Pixel.Mode PixelMode { get; set; } = Pixel.Mode.Normal;
+		public Font Font { get; set; }
+		public float PixelBlend { get => pixBlend; set => pixBlend = Constrain(value, 0, 1); }
+		public long FrameCount { get; private set; }
+		public bool Focus { get; private set; }
+		public int FrameRate { get; private set; }
+		public Scroll MouseScroll { get; private set; }
+		public Clock Clock { get; private set; }
+		public float Volume
 		{
 			get
 			{
@@ -47,7 +36,7 @@ namespace PixelEngine
 					audio.Volume = Constrain(value, 0, 1);
 			}
 		}
-		protected float AudioTime
+		public float AudioTime
 		{
 			get
 			{
@@ -56,7 +45,7 @@ namespace PixelEngine
 				return audio.GlobalTime;
 			}
 		}
-		protected Shader Shader
+		public Shader Shader
 		{
 			get => shader;
 			set
@@ -65,10 +54,20 @@ namespace PixelEngine
 				PixelMode = shader != null ? Pixel.Mode.Custom : Pixel.Mode.Normal;
 			}
 		}
-		protected Sprite DrawTarget
+		public Sprite DrawTarget
 		{
 			get => drawTarget;
 			set => drawTarget = value ?? defDrawTarget;
+		}
+		public override string AppName
+		{
+			get => base.AppName;
+			protected set
+			{
+				base.AppName = value;
+				if (Handle != IntPtr.Zero)
+					SetWindowText(Handle, AppName);
+			}
 		}
 
 		private Thread gameLoop;
@@ -93,19 +92,19 @@ namespace PixelEngine
 		private Sprite textTarget;
 		private Sprite defDrawTarget;
 
-		private Button anyKey;
-		private Button noneKey;
-		private Button anyMouse;
-		private Button noneMouse;
+		private Input anyKey;
+		private Input noneKey;
+		private Input anyMouse;
+		private Input noneMouse;
 
 		private bool delaying;
 		private float delayTime;
 		private Shader shader;
-		private readonly Button[] keyboard = new Button[256];
+		private readonly Input[] keyboard = new Input[256];
 		private readonly bool[] newKeyboard = new bool[256];
 		private readonly bool[] oldKeyboard = new bool[256];
 
-		private readonly Button[] mouse = new Button[3];
+		private readonly Input[] mouse = new Input[3];
 		private readonly bool[] newMouse = new bool[3];
 		private readonly bool[] oldMouse = new bool[3];
 
@@ -360,7 +359,7 @@ namespace PixelEngine
 
 		#region Helpers
 		#region Engine
-		public Button GetKey(Key k)
+		public Input GetKey(Key k)
 		{
 			if (k == Key.Any)
 				return anyKey;
@@ -368,7 +367,7 @@ namespace PixelEngine
 				return noneKey;
 			return keyboard[(int)k];
 		}
-		public Button GetMouse(Mouse m)
+		public Input GetMouse(Mouse m)
 		{
 			if (m == Mouse.Any)
 				return anyMouse;
@@ -377,21 +376,23 @@ namespace PixelEngine
 			return mouse[(int)m];
 		}
 
-		protected void Delay(float time)
+		public void Delay(float time)
 		{
 			if (!delaying)
 				delaying = true;
 			delayTime += time;
 		}
 
-		protected void Continue() => active = true;
-		protected void Finish() => active = false;
+		public void Continue() => active = true;
+		public void Finish() => active = false;
 
-		protected void NoLoop() => paused = true;
-		protected void Loop() => paused = false;
+		public void NoLoop() => paused = true;
+		public void Loop() => paused = false;
 
-		protected Pixel GetScreenPixel(int x, int y) => defDrawTarget[x, y];
-		protected Pixel[,] GetScreen()
+		public Font CreateFont(Dictionary<char, Sprite> glyphs) => new Font(glyphs);
+
+		public Pixel GetScreenPixel(int x, int y) => defDrawTarget[x, y];
+		public Pixel[,] GetScreen()
 		{
 			Pixel[,] screen = new Pixel[ScreenWidth, ScreenHeight];
 			for (int i = 0; i < ScreenWidth* ScreenHeight; i++)
@@ -405,19 +406,19 @@ namespace PixelEngine
 		#endregion
 
 		#region Math
-		protected static readonly float PI = (float)Math.PI;
+		public static readonly float PI = (float)Math.PI;
 
-		protected float Sin(float val) => (float)Math.Sin(val);
-		protected float Cos(float val) => (float)Math.Cos(val);
-		protected float Tan(float val) => (float)Math.Tan(val);
+		public float Sin(float val) => (float)Math.Sin(val);
+		public float Cos(float val) => (float)Math.Cos(val);
+		public float Tan(float val) => (float)Math.Tan(val);
 
-		protected float Power(float val, float pow) => (float)Math.Pow(val, pow);
-		protected float Round(float val, int digits = 0) => (float)Math.Round(val, digits);
+		public float Power(float val, float pow) => (float)Math.Pow(val, pow);
+		public float Round(float val, int digits = 0) => (float)Math.Round(val, digits);
 
-		protected float Map(float val, float oMin, float oMax, float nMin, float nMax) => (val - oMin) / (oMax - oMin) * (nMax - nMin) + nMin;
-		protected float Constrain(float val, float min, float max) => Math.Max(Math.Min(max, val), min);
-		protected float Lerp(float start, float end, float amt) => Map(amt, 0, 1, start, end);
-		protected float Wrap(float val, float min, float max)
+		public float Map(float val, float oMin, float oMax, float nMin, float nMax) => (val - oMin) / (oMax - oMin) * (nMax - nMin) + nMin;
+		public float Constrain(float val, float min, float max) => Math.Max(Math.Min(max, val), min);
+		public float Lerp(float start, float end, float amt) => Map(amt, 0, 1, start, end);
+		public float Wrap(float val, float min, float max)
 		{
 			if (val > max)
 				return val - min;
@@ -425,28 +426,28 @@ namespace PixelEngine
 				return val - max;
 			return val;
 		}
-		protected float Distance(float x1, float y1, float x2, float y2) => Power(Power(x2 - x1, 2) + Power(y2 - y1, 2), 1 / 2);
-		protected float Magnitude(float x, float y) => Power(Power(x, 2) + Power(y, 2), 1 / 2);
-		protected bool Between(float val, float min, float max) => val > min && val < max;
+		public float Distance(float x1, float y1, float x2, float y2) => Power(Power(x2 - x1, 2) + Power(y2 - y1, 2), 1 / 2);
+		public float Magnitude(float x, float y) => Power(Power(x, 2) + Power(y, 2), 1 / 2);
+		public bool Between(float val, float min, float max) => val > min && val < max;
 
-		protected void Seed() => Randoms.Seed = Environment.TickCount % int.MaxValue;
-		protected void Seed(int s) => Randoms.Seed = s;
-		protected int Random(int max) => Random(0, max);
-		protected int Random(int min, int max) => Randoms.RandomInt(min, max);
-		protected float Random() => Random(0f, 1f);
-		protected float Random(float max) => Random(0, max);
-		protected float Random(float min, float max) => Randoms.RandomFloat(min, max);
-		protected T Random<T>(params T[] list) => list[Random(list.Length)];
-		protected T Random<T>(List<T> list) => list[Random(list.Count)];
-		protected T Random<T>(IEnumerable<T> list) => Random(list.ToArray());
+		public void Seed() => Randoms.Seed = Environment.TickCount % int.MaxValue;
+		public void Seed(int s) => Randoms.Seed = s;
+		public int Random(int max) => Random(0, max);
+		public int Random(int min, int max) => Randoms.RandomInt(min, max);
+		public float Random() => Random(0f, 1f);
+		public float Random(float max) => Random(0, max);
+		public float Random(float min, float max) => Randoms.RandomFloat(min, max);
+		public T Random<T>(params T[] list) => list[Random(list.Length)];
+		public T Random<T>(List<T> list) => list[Random(list.Count)];
+		public T Random<T>(IEnumerable<T> list) => Random(list.ToArray());
 
-		protected float Degrees(float radians) => (float)(radians * 180 / Math.PI);
-		protected float Radians(float degrees) => (float)(degrees * Math.PI / 180);
+		public float Degrees(float radians) => (float)(radians * 180 / Math.PI);
+		public float Radians(float degrees) => (float)(degrees * Math.PI / 180);
 		#endregion
 
 		#region Collections
-		protected T[] MakeArray<T>(params T[] items) => items;
-		protected T[] MakeArray<T>(int count, Func<int, T> selector)
+		public T[] MakeArray<T>(params T[] items) => items;
+		public T[] MakeArray<T>(int count, Func<int, T> selector)
 		{
 			T[] arr = new T[count];
 			for (int i = 0; i < count; i++)
@@ -454,8 +455,8 @@ namespace PixelEngine
 			return arr;
 		}
 
-		protected List<T> MakeList<T>(params T[] items) => items.ToList();
-		protected List<T> MakeList<T>(int count, Func<int, T> selector)
+		public List<T> MakeList<T>(params T[] items) => items.ToList();
+		public List<T> MakeList<T>(int count, Func<int, T> selector)
 		{
 			List<T> list = new List<T>(count);
 			for (int i = 0; i < count; i++)
@@ -687,6 +688,80 @@ namespace PixelEngine
 					d += 4 * x0++ + 6;
 				else
 					d += 4 * (x0++ - y0--) + 10;
+			}
+		}
+		public void DrawEllipse(Point p, int width, int height, Pixel col)
+		{
+			if (width == 0 || height == 0)
+				return;
+
+			int a2 = width * width;
+			int b2 = height * height;
+			int fa2 = 4 * a2, fb2 = 4 * b2;
+			int sigma;
+
+			sigma = 2 * b2 + a2 * (1 - 2 * height);
+			for (int x = 0, y = height; b2 * x <= a2 * y; x++)
+			{
+				Draw(p.X + x, p.Y + y, col);
+				Draw(p.X - x, p.Y + y, col);
+				Draw(p.X + x, p.Y - y, col);
+				Draw(p.X - x, p.Y - y, col);
+
+				if (sigma >= 0)
+					sigma += fa2 * (1 - y--);
+				sigma += b2 * ((4 * x) + 6);
+			}
+
+			sigma = 2 * a2 + b2 * (1 - 2 * width);
+			for (int x = width, y = 0; a2 * y <= b2 * x; y++)
+			{
+				Draw(p.X + x, p.Y + y, col);
+				Draw(p.X - x, p.Y + y, col);
+				Draw(p.X + x, p.Y - y, col);
+				Draw(p.X - x, p.Y - y, col);
+
+				if (sigma >= 0)
+					sigma += fb2 * (1 - x--);
+				sigma += a2 * ((4 * y) + 6);
+			}
+		}
+		public void FillEllipse(Point p, int width, int height, Pixel col)
+		{
+			if (width == 0 || height == 0)
+				return;
+
+			void ScanLine(int sx, int ex, int y)
+			{
+				for (int i = sx; i <= ex; i++)
+					Draw(i, y, col);
+			}
+
+			int a2 = width * width;
+			int b2 = height * height;
+			int fa2 = 4 * a2, fb2 = 4 * b2;
+			int sigma;
+
+			sigma = 2 * b2 + a2 * (1 - 2 * height);
+			for (int x = 0, y = height; b2 * x <= a2 * y; x++)
+			{
+				ScanLine(p.X - x, p.X + x, p.Y - y);
+				ScanLine(p.X - x, p.X + x, p.Y + y);
+
+				if (sigma >= 0)
+					sigma += fa2 * (1 - y--);
+				sigma += b2 * ((4 * x) + 6);
+			}
+
+			sigma = 2 * a2 + b2 * (1 - 2 * width);
+			for (int x = width, y = 0; a2 * y <= b2 * x; y++)
+			{
+				ScanLine(p.X - x, p.X + x, p.Y - y);
+				ScanLine(p.X - x, p.X + x, p.Y + y);
+
+				if (sigma >= 0)
+					sigma += fb2 * (1 - x--);
+				sigma += a2 * ((4 * y) + 6);
 			}
 		}
 		public void DrawRect(Point p, int w, int h, Pixel col)
@@ -1036,15 +1111,24 @@ namespace PixelEngine
 				{
 					if (Font.Glyphs.TryGetValue(c, out Sprite cur))
 					{
-
-						for (int x = 0; x < cur.Width; x++)
-							for (int y = 0; y < cur.Height; y++)
-								for (int ax = 0; ax < scale; ax++)
-									for (int ay = 0; ay < scale; ay++)
-										if (cur[x, y].R > 0)
-											Draw(p.X + sx + x + ax, p.Y + sy + y + ay, col);
-
-						sx += cur.Width;
+						if (scale > 1)
+						{
+							for (int i = 0; i < cur.Width; i++)
+								for (int j = 0; j < cur.Height; j++)
+									if (cur[i, j].R > 0)
+										for (int ax = 0; ax < scale; ax++)
+											for (int ay = 0; ay < scale; ay++)
+												Draw(p.X + sx + (i * scale) + ax, p.Y + sy + (j * scale) + ay, col);
+						}
+						else
+						{
+							for (int i = 0; i < cur.Width; i++)
+								for (int j = 0; j < cur.Height; j++)
+									if (cur[i, j].R > 0)
+												Draw(p.X + sx + i, p.Y + sy + j, col);
+						}
+						
+						sx += cur.Width * scale;
 					}
 					else
 					{
@@ -1132,14 +1216,24 @@ namespace PixelEngine
 				{
 					if (Font.Glyphs.TryGetValue(c, out Sprite cur))
 					{
-						for (int x = 0; x < cur.Width; x++)
-							for (int y = 0; y < cur.Height; y++)
-								for (int ax = 0; ax < scale; ax++)
-									for (int ay = 0; ay < scale; ay++)
-										if (cur[x, y].R > 0)
-											SetPixel(p.X + sx + x + ax, p.Y + sy + y + ay);
-
-						sx += cur.Width;
+						if (scale > 1)
+						{
+							for (int i = 0; i < cur.Width; i++)
+								for (int j = 0; j < cur.Height; j++)
+									if (cur[i, j].R > 0)
+										for (int ax = 0; ax < scale; ax++)
+											for (int ay = 0; ay < scale; ay++)
+												SetPixel(p.X + sx + (i * scale) + ax, p.Y + sy + (j * scale) + ay);
+						}
+						else
+						{
+							for (int i = 0; i < cur.Width; i++)
+								for (int j = 0; j < cur.Height; j++)
+									if (cur[i, j].R > 0)
+										SetPixel(p.X + sx + i, p.Y + sy + j);
+						}
+						
+						sx += cur.Width * scale;
 					}
 					else
 					{

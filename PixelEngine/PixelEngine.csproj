@@ -46,7 +46,7 @@
     <Compile Include="Utilities\Json.cs" />
     <Compile Include="Extensions\Transform.cs" />
     <Compile Include="Utilities\Algorithms.cs" />
-    <Compile Include="Button.cs" />
+    <Compile Include="Input.cs" />
     <Compile Include="Display.cs" />
     <Compile Include="ResxHelper.cs" />
     <Compile Include="Enums.cs" />

@@ -1,6 +1,6 @@
 ﻿namespace PixelEngine
 {
-	public struct Button
+	public struct Input
 	{
 		public bool Pressed { get; internal set; }
 		public bool Released { get; internal set; }
