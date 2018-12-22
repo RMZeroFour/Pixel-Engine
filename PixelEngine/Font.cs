@@ -17,8 +17,11 @@ namespace PixelEngine
 		internal Font(Dictionary<char, Sprite> glyphs)
 		{
 			Glyphs = glyphs;
-			CharHeight = glyphs.First().Value.Height;
+			CharHeight = glyphs.Values.Max(g => g.Height);
 		}
+		
+		public int TextWidth(string text) => text.Sum(c => Glyphs[c].Width);
+		public int TextHeight(string text) => (text.Count(c => c == '\n') + 1) * CharHeight;
 
 		static Font()
 		{
