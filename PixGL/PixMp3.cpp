@@ -399,7 +399,7 @@ HRESULT WriteWaveFile(IMFSourceReader *pReader, HANDLE hFile, LONG msecAudioData
 PixMp3 bool Convert(WCHAR *wszSourceFile, WCHAR *wszTargetFile)
 {
 	HeapSetInformation(NULL, HeapEnableTerminationOnCorruption, NULL, 0);
-        const LONG MAX_AUDIO_DURATION_MSEC = ULLONG_MAX; // 500 seconds
+    const unsigned long long MAX_AUDIO_DURATION_MSEC = ULLONG_MAX; // 500 seconds
 
 	HRESULT hr = S_OK;
 

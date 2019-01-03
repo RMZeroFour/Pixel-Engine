@@ -99,7 +99,9 @@ namespace PixelEngine
 
 		private bool delaying;
 		private float delayTime;
+
 		private Shader shader;
+
 		private readonly Input[] keyboard = new Input[256];
 		private readonly bool[] newKeyboard = new bool[256];
 		private readonly bool[] oldKeyboard = new bool[256];
@@ -107,9 +109,6 @@ namespace PixelEngine
 		private readonly Input[] mouse = new Input[3];
 		private readonly bool[] newMouse = new bool[3];
 		private readonly bool[] oldMouse = new bool[3];
-
-		private const int CharWidth = 8;
-		private const int CharHeight = 8;
 		#endregion
 
 		#region Working
@@ -1067,11 +1066,13 @@ namespace PixelEngine
 
 				case Subsystem.Audio:
 					if (audio == null)
-						audio = new AudioEngine
+					{
+						audio = new AudioEngine()
 						{
 							OnSoundCreate = this.OnSoundCreate,
 							OnSoundFilter = this.OnSoundFilter
 						};
+					}
 					audio.CreateAudio();
 					break;
 

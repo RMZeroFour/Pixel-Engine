@@ -47,8 +47,6 @@ namespace PixelEngine
 			GlTexParameteri((uint)GL.Texture2D, (uint)GL.TextureMagFilter, (int)GL.Nearest);
 			GlTexParameteri((uint)GL.Texture2D, (uint)GL.TextureMinFilter, (int)GL.Nearest);
 			GlTexEnvf((uint)GL.TextureEnv, (uint)GL.TextureEnvMode, (float)GL.Decal);
-
-			ReleaseDC(game.Handle, deviceContext);
 		}
 
 		public unsafe void Initialize(Sprite drawTarget, Sprite textTarget)
@@ -65,12 +63,13 @@ namespace PixelEngine
 
 			SetValues(pw, ph, ww, wh);
 			CreateCoords(game.PixWidth, game.PixHeight, game.ScreenWidth, game.ScreenHeight);
+
+			ReleaseDC(game.Handle, deviceContext);
+			deviceContext = GetDC(game.Handle);
 		}
 
 		public unsafe void Draw(Sprite drawTarget, Sprite textTarget)
 		{
-			deviceContext = GetDC(game.Handle);
-
 			fixed (Pixel* ptr = drawTarget.GetData())
 			{
 				if (game.PixWidth == 1 && game.PixHeight == 1)
@@ -84,12 +83,11 @@ namespace PixelEngine
 					RenderText(game.windowWidth, game.windowHeight, textTarget.Width, textTarget.Height, ptr);
 
 			SwapBuffers(deviceContext);
-
-			ReleaseDC(game.Handle, deviceContext);
 		}
 
 		public void Destroy()
 		{
+			ReleaseDC(game.Handle, deviceContext);
 			WglDeleteContext(renderContext);
 			DestroyCoords();
 		}
