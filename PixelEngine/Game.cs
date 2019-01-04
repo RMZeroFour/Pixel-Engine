@@ -21,6 +21,7 @@ namespace PixelEngine
 		public float PixelBlend { get => pixBlend; set => pixBlend = Constrain(value, 0, 1); }
 		public long FrameCount { get; private set; }
 		public bool Focus { get; private set; }
+		public bool ClampMouse { get; set; } = false;
 		public int FrameRate { get; private set; }
 		public Scroll MouseScroll { get; private set; }
 		public Clock Clock { get; private set; }
@@ -102,6 +103,9 @@ namespace PixelEngine
 
 		private Shader shader;
 
+		private bool mouseOutOfWindow;
+		private bool[] heldWhileExit = new bool[3];
+
 		private readonly Input[] keyboard = new Input[256];
 		private readonly bool[] newKeyboard = new bool[256];
 		private readonly bool[] oldKeyboard = new bool[256];
@@ -155,6 +159,9 @@ namespace PixelEngine
 			if (frameTimer != null)
 				frameTimer.Init(t1);
 
+			IntPtr timerProc = Marshal.GetFunctionPointerForDelegate<TimerProc>(MouseTimer);
+			SetTimer(Handle, TimerOne, 10, timerProc);
+
 			while (active)
 			{
 				while (active)
@@ -204,6 +211,8 @@ namespace PixelEngine
 			canvas.Destroy();
 
 			PostMessage(Handle, (uint)WM.DESTROY, IntPtr.Zero, IntPtr.Zero);
+
+			KillTimer(Handle, TimerOne);
 
 			DestroyTempPath();
 		}
@@ -286,14 +295,8 @@ namespace PixelEngine
 		}
 		private protected override IntPtr WndProc(IntPtr handle, uint msg, int wParam, int lParam)
 		{
-			uint LoWord(uint val) => val & 0xFFFF;
-			uint HiWord(uint val) => val >> 16;
-
 			switch (msg)
 			{
-				case (uint)WM.MOUSEMOVE:
-					UpdateMouse(LoWord((uint)lParam), HiWord((uint)lParam));
-					break;
 				case (uint)WM.SETFOCUS:
 					Focus = true;
 					break;
@@ -466,10 +469,39 @@ namespace PixelEngine
 		#endregion
 
 		#region Inner
-		private void UpdateMouse(uint x, uint y)
+		private void MouseTimer(IntPtr handle, uint message, IntPtr id, uint interval)
 		{
-			MouseX = (int)x / PixWidth;
-			MouseY = (int)y / PixHeight;
+			Windows.Point p = new Windows.Point();
+			GetCursorPos(ref p);
+			ScreenToClient(Handle, ref p);
+			UpdateMouse(p.X, p.Y);
+		}
+		private void UpdateMouse(int x, int y)
+		{
+			if (ClampMouse)
+			{
+				MouseX = (int)(Constrain(x, 0, windowWidth - 1) / PixWidth);
+				MouseY = (int)(Constrain(y, 0, windowHeight - 1) / PixHeight);
+			}
+			else
+			{
+				MouseX = x / PixWidth;
+				MouseY = y / PixHeight;
+			}
+
+			if (!mouseOutOfWindow && (!Between(x / PixWidth, 0, ScreenWidth) || !Between(y / PixHeight, 0, ScreenHeight)))
+				mouseOutOfWindow = true;
+
+			if (mouseOutOfWindow && Between(x / PixWidth, 0, ScreenWidth) && Between(y / PixHeight, 0, ScreenHeight))
+			{
+				mouseOutOfWindow = false;
+
+				newMouse[(int)Mouse.Left] = GetKeyState((int)VK.LBUTTON) < 0;
+				newMouse[(int)Mouse.Middle] = GetKeyState((int)VK.MBUTTON) < 0;
+				newMouse[(int)Mouse.Right] = GetKeyState((int)VK.RBUTTON) < 0;
+			
+				HandleMouse();
+			}
 		}
 		private protected override void CreateWindow()
 		{

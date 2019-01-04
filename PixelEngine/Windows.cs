@@ -47,6 +47,8 @@ namespace PixelEngine
 
 		public static readonly IntPtr WindowTop = new IntPtr(0);
 
+		public static readonly IntPtr TimerOne = new IntPtr(1001);
+
 		public const int ApplicationIcon = 32512;
 		public const int ArrowCursor = 32512;
 		public const int ColorWindow = 5;
@@ -573,6 +575,7 @@ namespace PixelEngine
 		public delegate void WaveDelegate(IntPtr hdrvr, int uMsg, int dwUser, ref WaveHdr wavhdr, int dwParam2);
 		public delegate IntPtr WindowProcess(IntPtr handle, uint msg, int wParam, int lParam);
 		public delegate bool SwapInterval(int interval);
+		public delegate void TimerProc(IntPtr handle, uint message, IntPtr id, uint interval);
 		#endregion
 
 		#region Methods
@@ -580,6 +583,21 @@ namespace PixelEngine
 		#region User
 		[DllImport(User)]
 		public static extern void PostQuitMessage(int exitCode);
+
+		[DllImport(User)]
+		public static extern IntPtr SetTimer(IntPtr handle, IntPtr timerID, uint interval, IntPtr callback);
+
+		[DllImport(User)]
+		public static extern bool KillTimer(IntPtr handle, IntPtr timerID);
+
+		[DllImport(User)]
+		public static extern bool ScreenToClient(IntPtr handle, ref Point p);
+
+		[DllImport(User)]
+		public static extern bool GetCursorPos(ref Point p);
+
+		[DllImport(User)]
+		public static extern short GetKeyState(int vk);
 
 		[DllImport(User, SetLastError = true, CharSet = CharSet.Auto)]
 		[return: MarshalAs(UnmanagedType.I1)]
@@ -800,7 +818,7 @@ namespace PixelEngine
 		}
 
 		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-		internal struct MonitorInfo
+		public struct MonitorInfo
 		{
 			public int Size;
 			public Rect Monitor;
@@ -853,7 +871,7 @@ namespace PixelEngine
 			public string ClassName;
 			public IntPtr IconSm;
 		}
-
+		
 		[StructLayout(LayoutKind.Explicit)]
 		public struct PixelFormatDesc
 		{
