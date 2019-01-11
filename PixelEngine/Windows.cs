@@ -2,6 +2,7 @@
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security;
 
 namespace PixelEngine
 {
@@ -575,7 +576,7 @@ namespace PixelEngine
 		public delegate void WaveDelegate(IntPtr hdrvr, int uMsg, int dwUser, ref WaveHdr wavhdr, int dwParam2);
 		public delegate IntPtr WindowProcess(IntPtr handle, uint msg, int wParam, int lParam);
 		public delegate bool SwapInterval(int interval);
-		public delegate void TimerProc(IntPtr handle, uint message, IntPtr id, uint interval);
+		public delegate void TimerProcess(IntPtr handle, uint message, IntPtr id, uint interval);
 		#endregion
 
 		#region Methods
@@ -599,7 +600,7 @@ namespace PixelEngine
 		[DllImport(User)]
 		public static extern short GetKeyState(int vk);
 
-		[DllImport(User, SetLastError = true, CharSet = CharSet.Auto)]
+		[DllImport(User, SetLastError = true, CharSet = CharSet.Auto), SuppressUnmanagedCodeSecurity]
 		[return: MarshalAs(UnmanagedType.I1)]
 		public static extern bool SetWindowText(IntPtr hwnd, string text);
 
@@ -704,13 +705,13 @@ namespace PixelEngine
 		[DllImport(PixGl, CallingConvention = CallingConvention.Cdecl)]
 		public static extern void DestroyCoords();
 
-		[DllImport(PixGl, CallingConvention = CallingConvention.Cdecl)]
+		[DllImport(PixGl, CallingConvention = CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
 		public unsafe static extern void RenderUnitPixels(int width, int height, Pixel* pixels);
 
-		[DllImport(PixGl, CallingConvention = CallingConvention.Cdecl)]
+		[DllImport(PixGl, CallingConvention = CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
 		public unsafe static extern void RenderPixels(int width, int height, Pixel* pixels);
 
-		[DllImport(PixGl, CallingConvention = CallingConvention.Cdecl)]
+		[DllImport(PixGl, CallingConvention = CallingConvention.Cdecl), SuppressUnmanagedCodeSecurity]
 		public unsafe static extern void RenderText(int scrW, int scrH, int width, int height, Pixel* pixels);
 
 		#region PixMp3

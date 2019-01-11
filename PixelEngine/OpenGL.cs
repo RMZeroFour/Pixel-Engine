@@ -64,6 +64,13 @@ namespace PixelEngine
 			SetValues(pw, ph, ww, wh);
 			CreateCoords(game.PixWidth, game.PixHeight, game.ScreenWidth, game.ScreenHeight);
 
+			IntPtr vsyncPtr = WglGetProcAddress("wglSwapIntervalEXT");
+			if (vsyncPtr != IntPtr.Zero)
+			{
+				SwapInterval swap = Marshal.GetDelegateForFunctionPointer<SwapInterval>(vsyncPtr);
+				swap(0);
+			}
+
 			ReleaseDC(game.Handle, deviceContext);
 			deviceContext = GetDC(game.Handle);
 		}

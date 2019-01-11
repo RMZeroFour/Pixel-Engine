@@ -4,6 +4,6 @@
 	{
 		internal static void Init(Game game) => Game = game;
 
-		internal static Game Game { get; private set; }
+		protected static Game Game { get; private set; }
 	}
 }

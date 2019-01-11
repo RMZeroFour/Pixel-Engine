@@ -81,6 +81,7 @@ namespace PixelEngine
 		private Timer frameTimer;
 
 		private static WindowProcess proc;
+		private static TimerProcess timeProc;
 
 		private bool hrText;
 
@@ -159,7 +160,8 @@ namespace PixelEngine
 			if (frameTimer != null)
 				frameTimer.Init(t1);
 
-			IntPtr timerProc = Marshal.GetFunctionPointerForDelegate<TimerProc>(MouseTimer);
+			timeProc = MouseTimer;
+			IntPtr timerProc = Marshal.GetFunctionPointerForDelegate<TimerProcess>(timeProc);
 			SetTimer(Handle, TimerOne, 10, timerProc);
 
 			while (active)
